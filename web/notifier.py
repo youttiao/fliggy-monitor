@@ -107,7 +107,7 @@ def _build_dingtalk_body(alert: dict[str, Any]) -> dict[str, Any]:
         f"**等级**：<font color=\"{color}\">{severity}</font>",
     ]
     if alert.get("price_int"):
-        text_parts.append(f"**价格**：{alert['price_int']}{alert.get('price_dec', '')}{alert.get('price_suffix', '')}")
+        text_parts.append(f"**价格**：{_fmt_price(alert['price_int'], alert.get('price_dec'), alert.get('price_suffix'))}")
     if alert.get("url"):
         text_parts.append(f"[打开 Dashboard]({alert['url']})")
 
@@ -146,10 +146,7 @@ def _build_feishu_body(alert: dict[str, Any]) -> dict[str, Any]:
     if alert.get("watched"):
         body_elements.append({"tag": "tag", "text": "⭐ 关注"})
     if alert.get("price_int"):
-        price = f"¥{alert['price_int']}{alert.get('price_dec', '')}"
-        if alert.get("price_suffix"):
-            price += f" {alert['price_suffix']}"
-        body_elements.append({"tag": "markdown", "content": f"**价格** {price}"})
+        body_elements.append({"tag": "markdown", "content": f"**价格** {_fmt_price(alert['price_int'], alert.get('price_dec'), alert.get('price_suffix'))}"})
     if alert.get("url"):
         body_elements.append({
             "tag": "button",
@@ -188,12 +185,22 @@ def _sign_body(secret: str, body_bytes: bytes) -> str:
 
 
 def _fmt_price(price_int: Optional[str], price_dec: Optional[str], suffix: Optional[str]) -> str:
-    """把 price_int / price_dec / suffix 拼成「¥58.00 起」。"""
+    """把 price_int / price_dec / suffix 拼成「¥58.00 起」。
+
+    price_dec 的真实形态上游不一定：API 文档写的是 ``".0"`` / ``".5"``，但实测
+    偶尔会回 ``"00"`` / ``None`` / ``"0"``。如果直接 ``f"{price_int}{price_dec}"``，
+    后者会把 ``"30" + "00"`` 拼成 ``"¥3000"``（整数被吞进小数再乘 100），看似
+    价格暴涨但其实是缺小数点。
+
+    归一化：剥掉已有的小数点，把剩下的数字 padding 到 2 位（不够右补 0），
+    再和整数部分用 ``.`` 拼回去。与 ``web/templates_factory._fmt_price_cents``
+    是同一份逻辑，保证 webhook / Dashboard 渲染一致。
+    """
     if not price_int:
         return "—"
-    s = f"¥{price_int}"
-    if price_dec:
-        s += price_dec
+    raw = str(price_dec or "").replace(".", "").strip()
+    cents = (raw + "00")[:2]
+    s = f"¥{price_int}.{cents}"
     if suffix:
         s += f" {suffix}"
     return s
