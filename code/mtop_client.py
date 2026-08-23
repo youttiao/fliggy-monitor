@@ -12,6 +12,9 @@ import hashlib
 import json
 import subprocess
 import time
+from typing import Any
+from urllib.parse import quote
+
 from fliggy_selectors import (
     APP_KEY,
     BOOKTIPS_API,
@@ -25,8 +28,6 @@ from fliggy_selectors import (
     SHELF_VERSION,
     TTID,
 )
-from typing import Any
-from urllib.parse import quote
 
 
 class MtopError(Exception):

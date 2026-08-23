@@ -35,7 +35,6 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "code"))
 
 from fliggy_selectors import SELF_SELLER_ID  # noqa: E402
-
 from mtop_client import MtopClient, parse_seller_info, parse_ticket_cells  # noqa: E402
 
 from web import notifier  # noqa: E402
