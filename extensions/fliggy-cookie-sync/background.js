@@ -107,6 +107,39 @@ async function grabAllCookies() {
   return all;
 }
 
+// MV3 service worker 拿不到分区 cookie（chrome.cookies + partitionKey 在 SW 里返回空），
+// 但 H5 页面里 document.cookie 能读到（包括 _m_h5_tk / _m_h5_tk_enc）。
+// 在 H5 tab 的 MAIN world 跑一段脚本读 document.cookie，注入到结果里。
+async function readDocumentCookies(tabId) {
+  if (!tabId) return {};
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      world: "MAIN",
+      func: () => {
+        const out = {};
+        for (const part of document.cookie.split("; ")) {
+          const eq = part.indexOf("=");
+          if (eq < 0) continue;
+          const k = part.slice(0, eq).trim();
+          const v = part.slice(eq + 1);
+          if (k) out[k] = v;
+        }
+        return out;
+      },
+    });
+    return results?.[0]?.result || {};
+  } catch (e) {
+    log_to_bg(`readDocumentCookies failed: ${e?.message || e}`);
+    return {};
+  }
+}
+
+// 内部 log：SW 没接 popup 之前先用 console，发回去后 popup 会接 progress 消息
+function log_to_bg(msg) {
+  console.log("[fliggy-cookie-sync]", msg);
+}
+
 function waitForTabComplete(tabId, timeoutMs = 15000) {
   return new Promise((resolve) => {
     let done = false;
@@ -191,6 +224,20 @@ async function autoSync({ endpoint, secret }) {
 
     log("grab", "抓取浏览器 cookies…");
     const cookies = await grabAllCookies();
+    // MV3 SW 拿不到分区 cookie（_m_h5_tk 等），从 H5 tab 的 document.cookie 补一刀
+    if (win?.tabs?.[0]?.id) {
+      const tabId = win.tabs[0].id;
+      log("grab-doc", "从 H5 页面 document.cookie 补抓分区 cookie…");
+      const docCookies = await readDocumentCookies(tabId);
+      let added = 0;
+      for (const [k, v] of Object.entries(docCookies)) {
+        if (!cookies[k] && v) {
+          cookies[k] = v;
+          added++;
+        }
+      }
+      if (added > 0) log("grab-doc", `补到 ${added} 个分区 cookie`);
+    }
     const missing = REQUIRED.filter((k) => !cookies[k]);
     if (missing.length) {
       // 把窗口拉到前台，让用户能直接在里面登录

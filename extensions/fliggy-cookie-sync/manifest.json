@@ -22,7 +22,7 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["cookies", "storage", "tabs", "windows", "alarms", "notifications"],
+  "permissions": ["cookies", "storage", "tabs", "windows", "alarms", "notifications", "scripting"],
   "host_permissions": [
     "https://*.taobao.com/*",
     "http://*.taobao.com/*",
