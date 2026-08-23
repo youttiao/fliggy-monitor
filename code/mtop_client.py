@@ -88,7 +88,8 @@ class MtopClient:
         except json.JSONDecodeError as e:
             raise MtopError(f"JSON decode failed: {e}; body[:200]={body[:200]!r}")
         ret = raw.get("ret", [])
-        if not ret or "SUCCESS" not in ret:
+        # ret 是 list（可能含 "SUCCESS" 或 "SUCCESS::调用成功" 等），检查任一元素以 SUCCESS 开头
+        if not ret or not any(str(r).startswith("SUCCESS") for r in ret):
             raise MtopError(f"mtop ret != SUCCESS: {ret}; body[:300]={body[:300]!r}")
         return raw
 
