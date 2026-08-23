@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from web.db import connect, transaction, execute, set_config  # noqa: E402
+from web.db import connect, execute, set_config, transaction  # noqa: E402
 
 SCHEMA_SQL = """
 PRAGMA journal_mode = WAL;

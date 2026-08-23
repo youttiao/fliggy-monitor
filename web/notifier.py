@@ -30,7 +30,6 @@ from typing import Any, Optional
 
 import httpx
 
-
 PLATFORM_DINGTALK = "dingtalk"
 PLATFORM_FEISHU = "feishu"
 PLATFORM_CUSTOM = "custom"

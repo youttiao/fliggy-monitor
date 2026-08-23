@@ -34,11 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "code"))
 
-from mtop_client import MtopClient, parse_ticket_cells, parse_seller_info  # noqa: E402
 from selectors import SELF_SELLER_ID  # noqa: E402
 
-from web.db import connect, transaction, execute, query, set_config  # noqa: E402
+from mtop_client import MtopClient, parse_seller_info, parse_ticket_cells  # noqa: E402
+
 from web import notifier  # noqa: E402
+from web.db import connect, execute, query, set_config, transaction  # noqa: E402
 
 COOKIE_PATH = os.getenv("FLIGGY_COOKIES", "/etc/fliggy-monitor/cookies.json")
 DB_PATH = os.getenv("FLIGGY_DB", "/opt/fliggy-monitor/data/monitor.db")
@@ -103,7 +104,6 @@ def scan_poi(
         for c in cells:
             sid = c["sellerId"]
             is_self = 1 if sid == SELF_SELLER_ID else 0
-            ps = c.get("priceStruct", {}) if isinstance(c.get("priceStruct"), dict) else {}
 
             # 拆分价格
             full_price = c["price"]  # e.g. "¥58起"

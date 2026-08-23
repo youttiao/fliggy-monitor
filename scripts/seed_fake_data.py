@@ -187,6 +187,8 @@ if cell_seed_round1:
 
 # 写 alerts：非自营新增 + 价格异动 + 自营缺位
 import hashlib
+
+
 def dkey(*parts):
     bucket = int(datetime.now(timezone.utc).timestamp()) // 3600
     return hashlib.sha1(f"{'|'.join(parts)}|{bucket}".encode()).hexdigest()[:16]

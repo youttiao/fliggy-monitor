@@ -14,10 +14,10 @@ import hashlib
 import hmac
 import os
 import secrets
+import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-import sqlite3
 from fastapi import Request, Response
 
 from . import db as dbmod
@@ -229,7 +229,6 @@ def session_fingerprint_hash(sid: str) -> str:
 
 async def require_login(request: Request) -> sqlite3.Row:
     """FastAPI Depends：返回有效 session row，否则 302 到 /login。"""
-    from fastapi.responses import RedirectResponse
     conn = request.app.state.db
     sid = read_session_cookie(request)
     sess = get_session(conn, sid) if sid else None

@@ -12,14 +12,21 @@ import hashlib
 import json
 import subprocess
 import time
+from selectors import (
+    APP_KEY,
+    BOOKTIPS_API,
+    BOOKTIPS_DEFAULT_DATA,
+    BOOKTIPS_VERSION,
+    REQUIRED_HEADERS,
+    SHELF_API,
+    SHELF_DATA_TYPE_SHELF,
+    SHELF_FC_GROUP,
+    SHELF_FC_NAME,
+    SHELF_VERSION,
+    TTID,
+)
 from typing import Any
 from urllib.parse import quote
-
-from selectors import (
-    APP_KEY, TTID, REQUIRED_HEADERS,
-    SHELF_API, SHELF_VERSION, SHELF_FC_GROUP, SHELF_FC_NAME, SHELF_DATA_TYPE_SHELF,
-    BOOKTIPS_API, BOOKTIPS_VERSION, BOOKTIPS_DEFAULT_DATA,
-)
 
 
 class MtopError(Exception):
