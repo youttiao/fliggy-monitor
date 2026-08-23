@@ -16,8 +16,11 @@ const REQUIRED = ["_m_h5_tk", "_m_h5_tk_enc", "cookie2", "t"];
 // 之前的 detail 页 (rx-trip-ticket/pages/detail) 已 404，换成 rx-home 首页。
 const H5_URL = "https://market.m.taobao.com/app/trip/rx-home/pages/home";
 
-// H5 入口的 URL 前缀，用于识别「已经开着的飞猪窗口」（登录跳转后 URL 会变，但前缀不变）
-const H5_URL_PREFIX = "https://market.m.taobao.com/app/trip/";
+// H5 入口的 URL 路径前缀，用于识别「已经开着的飞猪窗口」。
+// 必须严格匹配当前 H5_URL 路径，不能放宽到 /app/trip/ —— 放宽的话
+// 历史上开过的任何 fliggy H5 子页面（包括已废弃的 rx-trip-ticket detail 页）
+// 都会被复用，从 404 页面抓 cookie 必然 4 个全 missing。
+const H5_URL_PREFIX = "https://market.m.taobao.com/app/trip/rx-home/pages/home";
 
 const COOKIE_DOMAINS = [
   ".taobao.com",
