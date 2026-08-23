@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -58,6 +59,19 @@ app = FastAPI(
     docs_url=None,  # 内部工具，禁 swagger
     redoc_url=None,
     openapi_url=None,
+)
+
+
+# CORS：Chrome 扩展（service worker）和跨域 POST 需要。Cookie 同步走
+# X-Sync-Secret 头校验，不需要带 cookie，所以 allow_credentials=False；
+# allow_origin_regex 同时匹配 popup 页面的 chrome-extension:// 起源和 dashboard 自身的 https。
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^https://([a-z0-9.-]+)?(19880913\.xyz|feizhu\.com|taobao\.com|tmall\.com)$|^chrome-extension://[a-p]+$",
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Sync-Secret"],
+    max_age=3600,
 )
 
 

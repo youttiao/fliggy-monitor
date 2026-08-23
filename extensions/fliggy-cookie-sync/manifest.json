@@ -31,6 +31,8 @@
     "https://*.fliggy.com/*",
     "http://*.fliggy.com/*",
     "https://*.alipay.com/*",
-    "http://*.alipay.com/*"
+    "http://*.alipay.com/*",
+    "https://feizhu.19880913.xyz/*",
+    "https://*.19880913.xyz/*"
   ]
 }

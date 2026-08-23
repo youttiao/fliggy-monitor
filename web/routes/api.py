@@ -1,8 +1,10 @@
-"""JSON API：dashboard 数据、Seller watch toggle、test webhook。"""
+"""JSON API：dashboard 数据、Seller watch toggle、test webhook、manual round trigger。"""
 
 from __future__ import annotations
 
 import json
+import subprocess
+import time
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends, Request
@@ -17,6 +19,11 @@ router = APIRouter(prefix="/api")
 
 def _conn(request: Request):
     return request.app.state.db
+
+
+# 手动触发 round 的 rate-limit：进程内 60s 一次。多次刷新页面/点击也防爆。
+_last_trigger: dict[str, float] = {"ts": 0.0}
+_MANUAL_COOLDOWN_S = 60
 
 
 @router.get("/dashboard/summary")
@@ -199,3 +206,55 @@ async def list_rounds(request: Request, limit: int = 20, _=Depends(authmod.requi
     conn = _conn(request)
     rows = dbmod.list_rounds(conn, limit=limit)
     return [dict(r) for r in rows]
+
+
+@router.post("/rounds/trigger")
+async def trigger_round_now(_=Depends(authmod.require_login)):
+    """手动立即触发一轮抓取。
+
+    通过 `systemctl start fliggy-monitor.service` 启动 oneshot 服务。
+    防滥用：60s cooldown + 服务已在跑时拒绝。
+    """
+    now = time.time()
+    since = now - _last_trigger["ts"]
+    if since < _MANUAL_COOLDOWN_S:
+        wait = int(_MANUAL_COOLDOWN_S - since)
+        return JSONResponse(
+            {"ok": False, "error": f"刚已触发（{wait}s 前），请稍等再试"},
+            status_code=429,
+        )
+
+    try:
+        active = subprocess.run(
+            ["systemctl", "is-active", "fliggy-monitor.service"],
+            capture_output=True, text=True, timeout=5,
+        ).stdout.strip()
+    except Exception as e:
+        active = f"unknown ({e})"
+    if active == "active":
+        return JSONResponse(
+            {"ok": False, "error": "fliggy-monitor 正在运行，无需再触发"},
+            status_code=409,
+        )
+
+    try:
+        # Type=oneshot 服务 start 默认会等到命令跑完（~40s），用 --no-block 立刻返回
+        subprocess.run(
+            ["systemctl", "start", "--no-block", "fliggy-monitor.service"],
+            check=True, timeout=5, capture_output=True, text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        return JSONResponse(
+            {"ok": False, "error": f"systemctl start 失败：{e.stderr or e}"},
+            status_code=500,
+        )
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+    _last_trigger["ts"] = now
+    return {
+        "ok": True,
+        "started_at": int(now),
+        "expected_duration_s": 40,
+        "message": "已触发，等约 40s 后 dashboard 刷新即可看到新数据",
+    }

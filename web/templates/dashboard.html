@@ -30,6 +30,7 @@
     <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
         status=<span style="color:var(--phosphor)">{{ latest.status }}</span> · {{ latest.duration_ms or '?' }}ms
     </span>
+    <button id="manual-trigger" class="btn btn--ghost" style="margin-left:12px;">⚡ 立即获取</button>
 </div>
 
 <div class="kpi-grid">
@@ -95,4 +96,41 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const btn = document.getElementById("manual-trigger");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+    const ok = confirm(
+      "⚡ 立即触发一轮抓取？\n\n" +
+      "会真实请求飞猪 mtop（8 个 POI 全跑），约 40s 完成。\n" +
+      "频繁触发可能触发风控，请确认确实需要。"
+    );
+    if (!ok) return;
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = "⏳ 触发中…";
+    try {
+      const r = await fetch("/api/rounds/trigger", { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) {
+        alert("触发失败：" + (j.error || r.statusText || "unknown"));
+        btn.disabled = false;
+        btn.innerHTML = original;
+        return;
+      }
+      btn.innerHTML = "⏳ 抓取中… 30s 后自动刷新";
+      setTimeout(() => location.reload(), 30000);
+    } catch (e) {
+      alert("请求失败：" + e.message);
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+})();
+</script>
 {% endblock %}

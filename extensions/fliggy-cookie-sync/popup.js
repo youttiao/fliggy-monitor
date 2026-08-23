@@ -189,6 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("auto-section").hidden = !haveConfig;
 
   $("retry").addEventListener("click", triggerAutoSync);
+  $("save-and-sync").addEventListener("click", triggerAutoSync);
 
   // 输入变化时清状态 + 切回 config 模式以便用户重填
   const onInput = () => {
