@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "飞猪哨兵 · Cookie 同步",
+  "short_name": "fliggy-cookie-sync",
+  "version": "1.0.0",
+  "description": "把当前浏览器登录态下的飞猪 mtop cookies 抓出来并上传到飞猪哨兵 VPS，给监控脚本续命。",
+  "action": {
+    "default_title": "飞猪哨兵 Cookie 同步",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "permissions": ["cookies", "storage"],
+  "host_permissions": [
+    "https://*.taobao.com/*",
+    "http://*.taobao.com/*",
+    "https://*.tmall.com/*",
+    "http://*.tmall.com/*",
+    "https://*.fliggy.com/*",
+    "http://*.fliggy.com/*",
+    "https://*.alipay.com/*",
+    "http://*.alipay.com/*"
+  ]
+}

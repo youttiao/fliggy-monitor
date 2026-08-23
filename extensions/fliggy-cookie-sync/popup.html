@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>飞猪哨兵 · Cookie 同步</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">🐷 飞猪哨兵</div>
+    <div class="sub">Cookie 同步工具</div>
+  </header>
+
+  <main>
+    <label class="field">
+      <span>服务地址</span>
+      <input id="endpoint" type="url" autocomplete="off" spellcheck="false"
+             placeholder="https://feizhu.19880913.xyz" />
+    </label>
+
+    <label class="field">
+      <span>同步密钥（X-Sync-Secret）</span>
+      <input id="secret" type="password" autocomplete="off" spellcheck="false"
+             placeholder="运维给的随机串，存到本地不外传" />
+    </label>
+
+    <div class="row">
+      <button id="sync" class="primary">从当前浏览器抓取并上传</button>
+    </div>
+
+    <div class="status" id="status" hidden></div>
+
+    <details class="meta">
+      <summary>已抓到的 cookie（最近一次）</summary>
+      <pre id="cookies-preview">— 还没有同步过 —</pre>
+    </details>
+
+    <div class="meta small">
+      上次同步：<span id="last-sync">—</span><br />
+      cookies.json mtime：<span id="server-mtime">—</span>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/youttiao/fliggy-monitor" target="_blank" rel="noreferrer">项目主页</a>
+    <span class="sep">·</span>
+    <a href="https://feizhu.19880913.xyz/login" target="_blank" rel="noreferrer">打开 Dashboard</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
