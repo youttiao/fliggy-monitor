@@ -10,6 +10,9 @@
             <p>第一次启动，还没完成任何一轮扫描。</p>
             <code>systemctl status fliggy-monitor.timer · journalctl -u fliggy-monitor.service -n 50</code>
         </div>
+        <div style="margin-top:24px;display:flex;align-items:center;gap:12px;">
+            <button id="manual-trigger" class="btn btn--ghost">⚡ 立即获取</button>
+        </div>
     </div>
 </div>
 {% else %}
@@ -24,18 +27,44 @@
 <div class="page-head">
     <div>
         <h1>Dashboard</h1>
-        <p class="sub mono">最近一轮 · {{ latest.round_id }} · {{ latest.started_at | bj }}</p>
+        <p class="sub mono">
+            {% if never_succeeded %}
+                等待首次成功扫描 · 上次尝试 {{ latest.started_at | bj }} · status={{ latest.status }}
+            {% elif stale %}
+                数据陈旧 · 基于 {{ effective_round.round_id }} · {{ effective_round.started_at | bj }}
+            {% else %}
+                最近一轮 · {{ latest.round_id }} · {{ latest.started_at | bj }}
+            {% endif %}
+        </p>
     </div>
     <div class="spacer"></div>
-    <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
-        status=<span style="color:var(--phosphor)">{{ latest.status }}</span> · {{ latest.duration_ms or '?' }}ms
-    </span>
+    {% if never_succeeded %}
+        <span class="pill" style="background:var(--bg-1);border:1px solid var(--red);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);color:var(--red);">
+            ⚠️ 尚未成功扫描
+        </span>
+    {% elif stale %}
+        <span class="pill" style="background:var(--bg-1);border:1px solid var(--amber);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);color:var(--amber);">
+            ⚠️ 数据陈旧 · 最后成功 {{ effective_round.started_at | relative('full') }}
+        </span>
+    {% else %}
+        <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
+            status=<span style="color:var(--phosphor)">{{ latest.status }}</span> · {{ latest.duration_ms or '?' }}ms
+        </span>
+    {% endif %}
     <button id="manual-trigger" class="btn btn--ghost" style="margin-left:12px;">⚡ 立即获取</button>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;font-size:12px;color:var(--text-2);">
+    {% if stale %}
+        <span class="mono" style="color:var(--text-3);">
+            最近一轮开始 {{ latest.started_at | bj }} · status={{ latest.status }}{% if latest.error_msg %} · {{ latest.error_msg[:80] }}{% endif %}
+        </span>
+    {% endif %}
 </div>
 
 <div class="kpi-grid">
     <div class="kpi">
-        <div class="label">货架总数（本轮）</div>
+        <div class="label">货架总数{% if stale %}（陈旧）{% else %}（本轮）{% endif %}</div>
         <div class="value" data-counter="{{ k.total }}">0</div>
         <div class="delta">8 POI · 自营 + 外部</div>
     </div>

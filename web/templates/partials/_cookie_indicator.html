@@ -1,0 +1,41 @@
+{# Cookie 同步状态指示器 — 用于 nav 右上角（所有页面可见）。
+   依赖：cookie 字典由 routes/pages.py 的 _ctx() 注入。
+   状态：ok / stale / expired / missing → 不同颜色 dot + 文案。
+   nav 上下文用紧凑文案（不重复"建议开浏览器续期"等长提示，hover title 揭示）。
+#}
+{% if cookie %}
+<span class="cookie-indicator cookie-{{ cookie.status }}" title="{{ cookie.path }} · 最后同步 {{ cookie.mtime or '从未' }}">
+    {% if cookie.status == 'ok' %}
+        <span class="dot dot--ok"></span>
+        cookie：{{ cookie.mtime | relative }}
+    {% elif cookie.status == 'stale' %}
+        <span class="dot dot--warn"></span>
+        cookie：{{ cookie.mtime | relative }}
+    {% elif cookie.status == 'expired' %}
+        <span class="dot dot--bad"></span>
+        cookie：{{ cookie.mtime | relative }}（需续）
+    {% else %}
+        <span class="dot dot--bad"></span>
+        cookie：未配置
+    {% endif %}
+</span>
+<style>
+    .cookie-indicator {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-family: var(--font-mono); font-size: 12px;
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--bg-1);
+    }
+    .cookie-indicator .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .cookie-ok         { color: var(--text-2); }
+    .cookie-ok .dot--ok     { background: var(--phosphor); box-shadow: 0 0 6px rgba(79,208,184,0.5); }
+    .cookie-stale      { color: var(--amber); border-color: var(--amber); }
+    .cookie-stale .dot--warn { background: var(--amber); box-shadow: 0 0 6px rgba(229,168,71,0.5); }
+    .cookie-expired,
+    .cookie-missing    { color: var(--red); border-color: var(--red); }
+    .cookie-expired .dot--bad,
+    .cookie-missing .dot--bad { background: var(--red); box-shadow: 0 0 6px rgba(255,107,107,0.5); }
+</style>
+{% endif %}

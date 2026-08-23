@@ -38,6 +38,8 @@ def _ctx(request: Request, **extra: Any) -> dict[str, Any]:
         "request": request,
         "site": _site_config(conn),
         "current_path": request.url.path,
+        # cookie 元数据：所有页面都需要（nav 显示同步状态）
+        "cookie": dbmod.cookie_metadata(),
         **extra,
     }
 
@@ -121,17 +123,56 @@ async def logout(request: Request):
 async def dashboard(request: Request, _=Depends(authmod.require_login)):
     conn = _conn(request)
     latest = dbmod.latest_round(conn)
+    cookie = dbmod.cookie_metadata()
+
     if not latest:
         return templates.TemplateResponse(
             request,
             "dashboard.html",
-            _ctx(request, no_data=True, latest=None, summary=[]),
+            _ctx(request, no_data=True, latest=None, summary=[],
+                 effective_round=None, stale=True,
+                 never_succeeded=True, cookie=cookie),
         )
-    summary = dbmod.poi_summary(conn, latest["id"])
+
+    # latest 是否有可用数据：success/partial 且 cells_total>0
+    is_latest_usable = (
+        latest["status"] in ("success", "partial")
+        and (latest["cells_total"] or 0) > 0
+    )
+
+    if is_latest_usable:
+        effective_round = latest
+        stale = False
+        last_success_round = None
+        never_succeeded = False
+    else:
+        # 回退到上一个有用 round
+        last_success_round = dbmod.latest_successful_round(conn)
+        if last_success_round and last_success_round["id"] != latest["id"]:
+            effective_round = last_success_round
+            stale = True
+            never_succeeded = False
+        else:
+            # 从未成功过 — 仍展示 latest 的壳，summary 是 0，提示用户去触发
+            effective_round = latest
+            stale = True
+            never_succeeded = True
+
+    summary = dbmod.poi_summary(conn, effective_round["id"])
     return templates.TemplateResponse(
         request,
         "dashboard.html",
-        _ctx(request, no_data=False, latest=latest, summary=summary),
+        _ctx(
+            request,
+            no_data=False,
+            latest=latest,
+            effective_round=effective_round,
+            summary=summary,
+            stale=stale,
+            last_success_round=last_success_round,
+            never_succeeded=never_succeeded,
+            cookie=cookie,
+        ),
     )
 
 

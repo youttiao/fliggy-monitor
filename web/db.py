@@ -21,6 +21,14 @@ from typing import Any, Iterable, Iterator
 # 默认 DB 路径：与 05-deployment-vps.md 对齐（/opt/fliggy-monitor/data/monitor.db）
 DEFAULT_DB_PATH = os.getenv("FLIGGY_DB", "/opt/fliggy-monitor/data/monitor.db")
 
+# 默认 cookie 文件路径：与 cookie_sync.py / fliggy_monitor.py 保持一致
+DEFAULT_COOKIE_PATH = os.getenv("FLIGGY_COOKIES", "/etc/fliggy-monitor/cookies.json")
+
+# cookie 同步状态的告警阈值（秒）。12h 内同步 = 绿；12h-3d = 黄；>3d = 红。
+# 这些值先用经验值占位，跑几天看真实 cookie mtime 再调。
+COOKIE_OK_MAX_AGE_S = 12 * 3600          # 12 hours
+COOKIE_STALE_MAX_AGE_S = 3 * 24 * 3600   # 3 days
+
 
 def _resolve_db_path(path: str | os.PathLike[str] | None = None) -> Path:
     p = Path(path) if path else Path(DEFAULT_DB_PATH)
@@ -140,6 +148,61 @@ def list_rounds(conn: sqlite3.Connection, limit: int = 20) -> list[sqlite3.Row]:
 
 def latest_round(conn: sqlite3.Connection) -> sqlite3.Row | None:
     return query(conn, "SELECT * FROM rounds ORDER BY started_at DESC LIMIT 1", one=True)
+
+
+def latest_successful_round(conn: sqlite3.Connection) -> sqlite3.Row | None:
+    """最新一轮『有可用数据』的 round。
+
+    判定：status='success'，或 status='partial' 且至少有一些 cell。
+    用于 dashboard 在最新一轮失败时回退到上一个有用的 round。
+    """
+    return query(
+        conn,
+        """SELECT * FROM rounds
+           WHERE (status = 'success' OR (status = 'partial' AND cells_total > 0))
+           ORDER BY id DESC LIMIT 1""",
+        one=True,
+    )
+
+
+def cookie_metadata(path: str | None = None) -> dict[str, Any]:
+    """cookies.json 文件健康度：是否存在、mtime、age_seconds、status。
+
+    status 取值：
+    - 'ok'：< COOKIE_OK_MAX_AGE_S（默认 12h）
+    - 'stale'：12h ~ COOKIE_STALE_MAX_AGE_S（默认 3d）
+    - 'expired'：> 3d
+    - 'missing'：文件不存在
+    """
+    from datetime import datetime, timezone
+    p = Path(path) if path else Path(DEFAULT_COOKIE_PATH)
+    if not p.exists():
+        return {
+            "exists": False,
+            "path": str(p),
+            "mtime": None,
+            "age_seconds": None,
+            "status": "missing",
+        }
+    stat = p.stat()
+    mtime = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc)
+    now = datetime.now(timezone.utc)
+    age = max(0, int((now - mtime).total_seconds()))
+
+    if age < COOKIE_OK_MAX_AGE_S:
+        status = "ok"
+    elif age < COOKIE_STALE_MAX_AGE_S:
+        status = "stale"
+    else:
+        status = "expired"
+
+    return {
+        "exists": True,
+        "path": str(p),
+        "mtime": mtime.isoformat(timespec="seconds"),
+        "age_seconds": age,
+        "status": status,
+    }
 
 
 def poi_summary(conn: sqlite3.Connection, latest_round_id: int) -> list[sqlite3.Row]:

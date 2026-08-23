@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -52,6 +52,46 @@ def _fmt_bj_date(iso_str: Any) -> str:
     return _fmt_bj(iso_str, fmt="%Y-%m-%d")
 
 
+def _fmt_relative(iso_str: Any, style: str = "coarse") -> str:
+    """UTC ISO → 「刚刚」「5 分钟前」「2 小时 13 分前」「3 天前」。
+
+    style='coarse'（默认）：单粒度，用于 cookie 同步时间等次要指示
+    style='full'：两级粒度（小时+分 / 天+小时），用于 stale badge
+    """
+    if not iso_str:
+        return ""
+    try:
+        dt = datetime.fromisoformat(str(iso_str).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            return str(iso_str)
+    except Exception:
+        return str(iso_str)
+
+    now = datetime.now(timezone.utc)
+    secs = max(0, int((now - dt).total_seconds()))
+
+    if secs < 60:
+        return "刚刚"
+
+    minutes = secs // 60
+    hours = secs // 3600
+    days = secs // 86400
+
+    if days >= 1:
+        if style == "full" and days < 7:
+            h = hours - days * 24
+            return f"{days} 天 {h} 小时前"
+        return f"{days} 天前"
+
+    if hours >= 1:
+        if style == "full":
+            m = minutes - hours * 60
+            return f"{hours} 小时 {m} 分前" if m else f"{hours} 小时前"
+        return f"{hours} 小时前"
+
+    return f"{minutes} 分钟前"
+
+
 def make_templates() -> Jinja2Templates:
     t = Jinja2Templates(directory=str(_TEMPLATES_DIR))
     t.env.globals["app_name"] = "飞猪哨兵"
@@ -59,4 +99,5 @@ def make_templates() -> Jinja2Templates:
     t.env.filters["price"] = _fmt_price_cents
     t.env.filters["bj"] = _fmt_bj
     t.env.filters["bjdate"] = _fmt_bj_date
+    t.env.filters["relative"] = _fmt_relative
     return t
