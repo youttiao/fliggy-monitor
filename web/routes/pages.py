@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -26,6 +27,7 @@ def _site_config(conn) -> dict[str, Any]:
         "self_seller_id": dbmod.get_config(conn, "self_seller_id", "2217592322543"),
         "self_seller_name": dbmod.get_config(conn, "self_seller_name", ""),
         "webhook_url": dbmod.get_config(conn, "webhook_url"),
+        "webhook_mode": dbmod.get_config(conn, "webhook_mode", "shelf_report"),
         "webhook_rules": dbmod.get_config(conn, "webhook_rules", {}),
     }
 
@@ -281,12 +283,14 @@ async def settings_page(request: Request, _=Depends(authmod.require_login)):
         "webhook_url": dbmod.get_config(conn, "webhook_url"),
         "webhook_secret": dbmod.get_config(conn, "webhook_secret"),
         "webhook_platform": dbmod.get_config(conn, "webhook_platform", "auto"),
+        "webhook_mode": dbmod.get_config(conn, "webhook_mode", "shelf_report"),
         "webhook_rules": dbmod.get_config(conn, "webhook_rules", {}),
         "webhook_recent": dbmod.get_config(conn, "webhook_recent", []),
         "self_seller_id": dbmod.get_config(conn, "self_seller_id"),
         "self_seller_name": dbmod.get_config(conn, "self_seller_name"),
         "polling_sec": dbmod.get_config(conn, "polling_sec", 1800),
         "site_name": dbmod.get_config(conn, "site_name", "飞猪哨兵"),
+        "cookie_sync_secret": os.getenv("COOKIE_SYNC_SECRET", ""),
     }
     return templates.TemplateResponse(request, "settings.html", _ctx(request, cfg=cfg))
 
@@ -297,6 +301,7 @@ async def settings_submit(
     webhook_url: str = Form(""),
     webhook_secret: str = Form(""),
     webhook_platform: str = Form("auto"),
+    webhook_mode: str = Form("shelf_report"),
     self_seller_id: str = Form(""),
     self_seller_name: str = Form(""),
     polling_sec: int = Form(1800),
@@ -312,6 +317,7 @@ async def settings_submit(
     dbmod.set_config(conn, "webhook_url", webhook_url or None)
     dbmod.set_config(conn, "webhook_secret", webhook_secret or None)
     dbmod.set_config(conn, "webhook_platform", webhook_platform)
+    dbmod.set_config(conn, "webhook_mode", webhook_mode if webhook_mode in ("shelf_report", "per_alert") else "shelf_report")
     dbmod.set_config(conn, "self_seller_id", self_seller_id)
     dbmod.set_config(conn, "self_seller_name", self_seller_name)
     dbmod.set_config(conn, "polling_sec", max(300, int(polling_sec)))

@@ -2,10 +2,10 @@
   "manifest_version": 3,
   "name": "飞猪哨兵 · Cookie 同步",
   "short_name": "fliggy-cookie-sync",
-  "version": "1.0.0",
-  "description": "把当前浏览器登录态下的飞猪 mtop cookies 抓出来并上传到飞猪哨兵 VPS，给监控脚本续命。",
+  "version": "1.1.0",
+  "description": "点一下工具栏图标，自动开手机尺寸窗口访问飞猪 H5 → 自动抓 mtop cookies → 自动上传到 VPS。",
   "action": {
-    "default_title": "飞猪哨兵 Cookie 同步",
+    "default_title": "飞猪哨兵 Cookie 同步（点一下自动同步）",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/16.png",
@@ -18,7 +18,11 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "permissions": ["cookies", "storage"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["cookies", "storage", "tabs", "windows", "alarms", "notifications"],
   "host_permissions": [
     "https://*.taobao.com/*",
     "http://*.taobao.com/*",

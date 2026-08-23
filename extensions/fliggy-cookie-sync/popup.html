@@ -8,24 +8,31 @@
 <body>
   <header>
     <div class="brand">🐷 飞猪哨兵</div>
-    <div class="sub">Cookie 同步工具</div>
+    <div class="sub">Cookie 自动同步</div>
   </header>
 
   <main>
-    <label class="field">
-      <span>服务地址</span>
-      <input id="endpoint" type="url" autocomplete="off" spellcheck="false"
-             placeholder="https://feizhu.19880913.xyz" />
-    </label>
+    <div id="config-section">
+      <label class="field">
+        <span>服务地址</span>
+        <input id="endpoint" type="url" autocomplete="off" spellcheck="false"
+               value="https://feizhu.19880913.xyz"
+               placeholder="例如 https://feizhu.19880913.xyz" />
+      </label>
 
-    <label class="field">
-      <span>同步密钥（X-Sync-Secret）</span>
-      <input id="secret" type="password" autocomplete="off" spellcheck="false"
-             placeholder="运维给的随机串，存到本地不外传" />
-    </label>
+      <label class="field">
+        <span>同步密钥（X-Sync-Secret）</span>
+        <input id="secret" type="password" autocomplete="off" spellcheck="false"
+               placeholder="运维给的随机串，存到本地不外传" />
+      </label>
+      <div class="hint">首次使用在这里填好，之后点图标就全自动了</div>
+    </div>
 
-    <div class="row">
-      <button id="sync" class="primary">从当前浏览器抓取并上传</button>
+    <div id="auto-section" hidden>
+      <div class="row">
+        <button id="retry" class="primary">立即同步（自动）</button>
+      </div>
+      <div class="hint">扩展会自动开一个手机尺寸窗口访问飞猪 H5，抓到 cookie 后自动上传</div>
     </div>
 
     <div class="status" id="status" hidden></div>

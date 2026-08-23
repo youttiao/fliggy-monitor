@@ -56,8 +56,8 @@
                     {% endif %}
                 </td>
                 <td class="num">{{ s.total_cells or 0 }}</td>
-                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.first_seen_at or '—' }}</td>
-                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.last_seen_at or '—' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.first_seen_at | bj or '—' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.last_seen_at | bj or '—' }}</td>
                 <td><a href="/sellers/{{ s.seller_id }}" class="btn btn--ghost" style="padding:4px 12px;font-size:12px;">编辑 →</a></td>
             </tr>
             {% endfor %}

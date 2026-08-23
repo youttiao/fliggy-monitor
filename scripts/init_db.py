@@ -216,6 +216,7 @@ DEFAULT_CONFIG = {
     "webhook_url": "null",  # 用户在 /settings 页面填
     "webhook_secret": "null",  # 钉钉加签 secret 或自定义 HMAC secret
     "webhook_platform": '"auto"',  # auto / dingtalk / feishu / custom
+    "webhook_mode": '"shelf_report"',  # shelf_report (每轮聚合一条, 推荐) / per_alert (旧逐条模式)
     "webhook_rules": json.dumps({
         "non_self_new": True,
         "price_alert": True,

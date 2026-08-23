@@ -122,33 +122,76 @@ async def list_watched_shelves(
 
 
 @router.post("/webhook/test")
-async def webhook_test(request: Request, _=Depends(authmod.require_login)):
+async def webhook_test(request: Request, body: dict[str, Any] = Body(default=None), _=Depends(authmod.require_login)):
     conn = _conn(request)
     url = dbmod.get_config(conn, "webhook_url")
     if not url or url == "null":
         return JSONResponse({"ok": False, "error": "未配置 webhook_url"}, status_code=400)
     secret = dbmod.get_config(conn, "webhook_secret")
     platform = dbmod.get_config(conn, "webhook_platform", "auto")
+    mode = dbmod.get_config(conn, "webhook_mode", "shelf_report")
+    kind = (body or {}).get("kind") or ("report" if mode == "shelf_report" else "single")
+
     sender = notif.WebhookSender(url, secret=secret if secret and secret != "null" else None,
                                   platform=None if platform == "auto" else platform)
-    payload = notif.render_alert(
-        alert_type="non_self_new",
-        severity="warning",
-        poi_id="1345",
-        poi_name="圆明园",
-        sku_name="成人票（含讲解）",
-        seller_id="2217592322543",
-        seller_display="测试商家",
-        watched=False,
-        price_int="58",
-        price_dec=".0",
-        price_suffix="起",
-        ts="now",
-        dashboard_url=str(request.base_url).rstrip("/") + "/poi/1345",
-    )
-    result = sender.send(payload)
+
+    if kind == "report":
+        report = {
+            "round_id": "rDEMO000000",
+            "ts": "2026-08-23 14:00",
+            "dashboard_url": str(request.base_url).rstrip("/") + "/poi/1345",
+            "total_pois": 3,
+            "non_self_pois": 2,
+            "groups": [
+                {
+                    "poi_id": "1345", "poi_name": "圆明园",
+                    "has_non_self": True, "non_self_count": 2, "self_count": 1,
+                    "shelves": [
+                        {"sku_name": "大门门票+讲解", "item_id": "1065739764221",
+                         "sku_id": "6276363111198", "price_int": "58",
+                         "price_dec": ".00", "price_suffix": "起", "watched": True},
+                        {"sku_name": "圆明园+颐和园联票", "item_id": "1065739764221",
+                         "sku_id": "6276363111200", "price_int": "88",
+                         "price_dec": ".50", "price_suffix": "起", "watched": True},
+                    ],
+                },
+                {
+                    "poi_id": "1544", "poi_name": "天坛",
+                    "has_non_self": False, "non_self_count": 0, "self_count": 5,
+                    "shelves": [],
+                },
+                {
+                    "poi_id": "2301", "poi_name": "颐和园",
+                    "has_non_self": True, "non_self_count": 1, "self_count": 0,
+                    "shelves": [
+                        {"sku_name": "大门门票", "item_id": "1065000111001",
+                         "sku_id": "6276000222002", "price_int": "30",
+                         "price_dec": ".00", "price_suffix": "起", "watched": True},
+                    ],
+                },
+            ],
+        }
+        result = sender.send_report(report)
+    else:
+        payload = notif.render_alert(
+            alert_type="non_self_new",
+            severity="warning",
+            poi_id="1345",
+            poi_name="圆明园",
+            sku_name="成人票（含讲解）",
+            seller_id="2217592322543",
+            seller_display="测试商家",
+            watched=False,
+            price_int="58",
+            price_dec=".00",
+            price_suffix="起",
+            ts="now",
+            dashboard_url=str(request.base_url).rstrip("/") + "/poi/1345",
+        )
+        result = sender.send(payload)
+
     return {"ok": result.ok, "status_code": result.status_code,
-            "response": result.response, "error": result.error}
+            "response": result.response, "error": result.error, "kind": kind}
 
 
 @router.get("/rounds")

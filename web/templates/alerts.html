@@ -38,7 +38,7 @@
             }.get(a.type, a.type) %}
             <div class="alert-item sev-{{ a.severity }}">
                 <div class="bar"></div>
-                <span class="ts">{{ a.ts }}</span>
+                <span class="ts">{{ a.ts | bj }}</span>
                 <span class="type">{{ type_label }}</span>
                 <div class="body">
                     {% if a.poi_name %}<strong>{{ a.poi_name }}</strong>{% else %}<span style="color:var(--text-3)">未知 POI</span>{% endif %}

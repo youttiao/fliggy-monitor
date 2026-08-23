@@ -24,7 +24,7 @@
 <div class="page-head">
     <div>
         <h1>Dashboard</h1>
-        <p class="sub mono">最近一轮 · {{ latest.round_id }} · {{ latest.started_at }}</p>
+        <p class="sub mono">最近一轮 · {{ latest.round_id }} · {{ latest.started_at | bj }}</p>
     </div>
     <div class="spacer"></div>
     <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
@@ -86,7 +86,7 @@
                     <td class="num" style="color:var(--phosphor)">{{ r.cells_self or 0 }}</td>
                     <td class="num" style="color:var(--amber)">{{ r.cells_non_self or 0 }}</td>
                     <td class="num">{{ r.non_self_sellers or 0 }}</td>
-                    <td class="mono" style="font-size:11px;color:var(--text-2)">{{ r.last_scanned_at or '—' }}</td>
+                    <td class="mono" style="font-size:11px;color:var(--text-2)">{{ r.last_scanned_at | bj or '—' }}</td>
                     <td><a href="/poi/{{ r.poi_id }}" class="btn btn--ghost" style="padding:4px 12px;font-size:12px;">详情 →</a></td>
                 </tr>
             {% endfor %}

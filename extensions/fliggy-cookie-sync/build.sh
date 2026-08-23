@@ -28,7 +28,7 @@ rm -f "$DIST"/fliggy-cookie-sync*.zip
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-cp manifest.json popup.html popup.css popup.js README.md "$TMP/"
+cp manifest.json background.js popup.html popup.css popup.js README.md "$TMP/"
 cp -r icons "$TMP/"
 
 # 写一个 build-info.txt 进 zip

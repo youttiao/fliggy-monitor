@@ -16,7 +16,8 @@
         <h2>Webhook 推送</h2>
         <span class="tag">飞书 / 钉钉</span>
         <div class="spacer"></div>
-        <button type="button" class="btn btn--ghost" onclick="testWebhook(this)">测试推送</button>
+        <button type="button" class="btn btn--ghost" onclick="testWebhook(this, 'single')">测试推送</button>
+        <button type="button" class="btn" onclick="testWebhook(this, 'report')">测试报告</button>
     </div>
     <div class="card-body">
         <div class="field">
@@ -32,6 +33,13 @@
                     <option value="dingtalk" {% if cfg.webhook_platform == 'dingtalk' %}selected{% endif %}>dingtalk（钉钉）</option>
                     <option value="feishu" {% if cfg.webhook_platform == 'feishu' %}selected{% endif %}>feishu（飞书）</option>
                     <option value="custom" {% if cfg.webhook_platform == 'custom' %}selected{% endif %}>custom（自定义）</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="webhook_mode">推送模式</label>
+                <select id="webhook_mode" name="webhook_mode">
+                    <option value="shelf_report" {% if cfg.webhook_mode == 'shelf_report' or cfg.webhook_mode == '"shelf_report"' %}selected{% endif %}>shelf_report（每轮聚合一条，推荐）</option>
+                    <option value="per_alert" {% if cfg.webhook_mode == 'per_alert' %}selected{% endif %}>per_alert（每条 alert 单独推送）</option>
                 </select>
             </div>
             <div class="field">
@@ -92,7 +100,7 @@
             <tbody>
             {% for r in cfg.webhook_recent | reverse %}
             <tr>
-                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.ts or '?' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.ts | bj or '?' }}</td>
                 <td>{% if r.ok %}<span style="color:var(--phosphor);">✓ sent</span>{% else %}<span style="color:var(--red);">✗ failed</span>{% endif %}</td>
                 <td class="num">{{ r.status_code or '—' }}</td>
                 <td class="mono" style="font-size:11px;color:var(--text-2);">{{ (r.response or '')[:120] }}</td>
@@ -122,6 +130,28 @@
             当前版本 <span id="ext-version" style="color:var(--cyan)">…</span>
             · zip <span id="ext-zip-info" style="color:var(--text-1)">…</span>
         </div>
+        <div class="field" style="margin-top:var(--s-3);">
+            <label for="cookie-sync-secret">扩展同步密钥（X-Sync-Secret）</label>
+            {% if cfg.cookie_sync_secret %}
+            <div class="field-row" style="grid-template-columns:1fr auto auto;align-items:end;">
+                <input type="password" id="cookie-sync-secret" readonly
+                       value="{{ cfg.cookie_sync_secret }}" autocomplete="off"
+                       style="font-family:var(--mono);font-size:12px;" />
+                <button type="button" class="btn btn--ghost" id="sync-secret-toggle"
+                        style="font-size:12px;padding:6px 10px;" title="显示 / 隐藏">👁</button>
+                <button type="button" class="btn" id="sync-secret-copy"
+                        style="font-size:12px;padding:6px 12px;" title="复制到剪贴板">📋 复制</button>
+            </div>
+            <div class="mono" style="font-size:11px;color:var(--text-3);margin-top:6px;">
+                在扩展 popup 里粘贴到「同步密钥」一栏；密钥只存在浏览器本地，不同步到云。
+            </div>
+            {% else %}
+            <div class="mono" style="font-size:12px;color:var(--red);">
+                未配置：服务器环境变量 <code>COOKIE_SYNC_SECRET</code> 未设置，扩展上传会被拒。<br />
+                生成：<code>python3 -c 'import secrets; print(secrets.token_urlsafe(32))'</code>，然后写到 <code>/etc/systemd/system/fliggy-web.service</code> 的 <code>Environment=</code> 行，<code>systemctl daemon-reload &amp;&amp; systemctl restart fliggy-web</code> 生效。
+            </div>
+            {% endif %}
+        </div>
         <p style="margin:var(--s-3) 0 0;color:var(--text-3);font-size:12px;">
             下载后解压 → Chrome <code>chrome://extensions/</code> → 开发者模式 → 加载已解压的扩展程序。
             详细步骤见压缩包内 README.md。
@@ -141,6 +171,39 @@
         const sizeKb = j.zip_bytes ? (j.zip_bytes / 1024).toFixed(1) + ' KB' : '—';
         document.getElementById('ext-zip-info').textContent = `${j.zip_name || '—'} · ${sizeKb}`;
     } catch (e) { /* swallow */ }
+})();
+
+// Cookie 同步密钥：显示/隐藏 + 复制
+(function () {
+    const input = document.getElementById('cookie-sync-secret');
+    const toggle = document.getElementById('sync-secret-toggle');
+    const copyBtn = document.getElementById('sync-secret-copy');
+    if (!input || !toggle || !copyBtn) return;
+
+    toggle.addEventListener('click', () => {
+        if (input.type === 'password') {
+            input.type = 'text';
+            toggle.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            toggle.textContent = '👁';
+        }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+        const v = input.value;
+        try {
+            await navigator.clipboard.writeText(v);
+            const orig = copyBtn.textContent;
+            copyBtn.textContent = '✓ 已复制';
+            copyBtn.disabled = true;
+            setTimeout(() => { copyBtn.textContent = orig; copyBtn.disabled = false; }, 1500);
+        } catch (e) {
+            // fallback：选中文字让用户手动 Ctrl+C
+            input.type = 'text';
+            input.select();
+        }
+    });
 })();
 </script>
 {% endblock %}

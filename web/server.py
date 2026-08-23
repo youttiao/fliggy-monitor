@@ -25,7 +25,8 @@ TEMPLATES_DIR = ROOT / "templates"
 STATIC_DIR = ROOT / "static"
 DB_PATH = os.getenv("FLIGGY_DB", "/opt/fliggy-monitor/data/monitor.db")
 
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
+_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=_LOG_LEVEL,
                     format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("web.server")
 

@@ -77,7 +77,9 @@ def now_utc_iso() -> str:
 
 
 def round_id_now() -> str:
-    return "r" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M")
+    # round_id 是给人看的标识，用 Asia/Shanghai 让它和 dashboard 上显示的时间对得上人眼
+    from zoneinfo import ZoneInfo
+    return "r" + datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y%m%d%H%M")
 
 
 # ── 一轮扫描 ────────────────────────────────────────────────────────
@@ -392,9 +394,23 @@ def persist_alerts(conn: sqlite3.Connection, alerts: list[dict]) -> list[dict]:
 
 def dispatch_webhooks(conn: sqlite3.Connection, alerts: list[dict],
                       dashboard_base: str | None) -> None:
-    """按 config.webhook_rules + URL 推送新增告警。
+    """按 ``webhook_mode`` config 派发。
 
-    货架过滤：v1 默认行为是「所有告警按规则推」。从这一版起增加**货架级 gate**：
+    ``shelf_report``（默认）：每轮聚合一条报告；只在有关注 POI 出现非自营货架时推送；
+    没有 watched shelf → 完全不推送。
+
+    ``per_alert``（旧模式）：每条 alert 一条消息，受 ``webhook_rules`` + shelf 关注门控。
+    """
+    mode = _get_config(conn, "webhook_mode", "shelf_report")
+    if mode == "per_alert":
+        _dispatch_per_alert(conn, alerts, dashboard_base)
+    else:
+        _dispatch_shelf_report(conn, dashboard_base)
+
+
+def _dispatch_per_alert(conn: sqlite3.Connection, alerts: list[dict],
+                        dashboard_base: str | None) -> None:
+    """旧行为：按 alert 推送。货架过滤：v1 默认行为是「所有告警按规则推」。从这一版起增加**货架级 gate**：
     只对 `shelf_watch.is_watched=1` 的 cell 推 webhook；
     且仅在该 cell 的当前供应商不是自营时推（self_missing 例外：货架消失/被替换即为非自营）。
     没标的货架继续入库 + 写 dashboard，但不骚扰 IM。
@@ -467,6 +483,174 @@ def dispatch_webhooks(conn: sqlite3.Connection, alerts: list[dict],
             )
         log.info("webhook %s type=%s status=%s code=%s", status, a["type"],
                  result.status_code, result.response[:80])
+
+
+# ── 货架聚合报告（每轮一条，节省 webhook 调用） ────────────────
+
+
+def build_shelf_report(conn: sqlite3.Connection, round_id: int) -> dict | None:
+    """聚合 round 里所有 watched + non-self cell，按 POI 分组；返回 report dict 或 None（无 watched）。"""
+    rows = query(
+        conn,
+        """
+        SELECT c.poi_id, c.poi_name, c.item_id, c.sku_id, c.sku_name,
+               c.price_int, c.price_dec, c.price_suffix,
+               c.is_self, c.seller_id, s.seller_name,
+               e.display_name AS enrichment_name
+        FROM cells_snapshot c
+        JOIN shelf_watch w
+          ON w.poi_id = c.poi_id AND w.item_id = c.item_id
+         AND w.sku_id = c.sku_id AND w.is_watched = 1
+        LEFT JOIN sellers s ON s.seller_id = c.seller_id
+        LEFT JOIN seller_enrichment e ON e.seller_id = c.seller_id
+        WHERE c.round_id = ?
+        ORDER BY c.poi_id, c.is_self DESC
+        """,
+        (round_id,),
+    ) or []
+    if not rows:
+        return None
+
+    # 按 POI 分组
+    by_poi: dict[str, dict] = {}
+    for r in rows:
+        d = dict(r)
+        g = by_poi.setdefault(d["poi_id"], {
+            "poi_id": d["poi_id"],
+            "poi_name": d["poi_name"],
+            "cells": [],
+        })
+        g["cells"].append(d)
+
+    groups: list[dict] = []
+    non_self_pois = 0
+    for pid, info in by_poi.items():
+        non_self = [c for c in info["cells"] if not c["is_self"]]
+        self_cells = [c for c in info["cells"] if c["is_self"]]
+        # 同一 (item, sku) 在一个 round 里只有一行（schema UNIQUE）
+        # 但 cell_type 不同的话仍是同一行；直接以行为准
+        shelves = []
+        for c in non_self:
+            shelves.append({
+                "sku_name": c["sku_name"] or "—",
+                "item_id": c["item_id"],
+                "sku_id": c["sku_id"],
+                "price_int": c["price_int"],
+                "price_dec": c["price_dec"],
+                "price_suffix": c["price_suffix"],
+                "watched": True,
+            })
+        if non_self:
+            non_self_pois += 1
+            groups.append({
+                "poi_id": pid,
+                "poi_name": info["poi_name"],
+                "has_non_self": True,
+                "non_self_count": len(non_self),
+                "self_count": len(self_cells),
+                "shelves": shelves,
+            })
+        else:
+            groups.append({
+                "poi_id": pid,
+                "poi_name": info["poi_name"],
+                "has_non_self": False,
+                "non_self_count": 0,
+                "self_count": len(self_cells),
+                "shelves": [],
+            })
+
+    # 非自营 POI 排前面
+    groups.sort(key=lambda g: (not g["has_non_self"], g["poi_name"]))
+
+    round_row = query(conn, "SELECT round_id, started_at FROM rounds WHERE id = ?",
+                      (round_id,), one=True)
+    return {
+        "round_id": round_row["round_id"] if round_row else "",
+        "ts": round_row["started_at"] if round_row else now_utc_iso(),
+        "groups": groups,
+        "total_pois": len(by_poi),
+        "non_self_pois": non_self_pois,
+    }
+
+
+def _dispatch_shelf_report(conn: sqlite3.Connection, dashboard_base: str | None) -> None:
+    """按 round 聚合一条报告并推送；只在 report 里有 non_self 时实际推送。"""
+    url = _get_config(conn, "webhook_url", None)
+    if not url or url == "null":
+        log.debug("webhook 未配置，跳过报告推送")
+        return
+
+    cur_round = query(conn, "SELECT id, round_id, started_at FROM rounds ORDER BY id DESC LIMIT 1", one=True)
+    if not cur_round:
+        log.warning("无 rounds 记录，跳过报告")
+        return
+
+    report = build_shelf_report(conn, cur_round["id"])
+    if not report:
+        log.info("round=%s 没有任何 watched 货架，跳过报告推送", cur_round["round_id"])
+        return
+    if report["non_self_pois"] == 0:
+        log.info("round=%s 关注的 %d 个 POI 全是自营，跳过报告推送",
+                 cur_round["round_id"], report["total_pois"])
+        return
+
+    report["dashboard_url"] = dashboard_base.rstrip("/") if dashboard_base else None
+
+    sender = notifier.WebhookSender(
+        url,
+        secret=_get_config(conn, "webhook_secret", None),
+        platform=_get_config(conn, "webhook_platform", "auto"),
+    )
+    result = sender.send_report(report)
+    status = "sent" if result.ok else "failed"
+    dedup_key = f"shelf_report|{cur_round['round_id']}"
+    resp_text = (result.response[:500] if result.response else None) or result.error
+    sent_at = now_utc_iso()
+
+    # 写一条聚合 alert 进 alerts 表（按 round 去重）
+    payload = {
+        "type": "shelf_report",
+        "round_id": cur_round["round_id"],
+        "total_pois": report["total_pois"],
+        "non_self_pois": report["non_self_pois"],
+        "groups": [
+            {
+                "poi_id": g["poi_id"], "poi_name": g["poi_name"],
+                "has_non_self": g["has_non_self"],
+                "non_self_count": g["non_self_count"],
+                "self_count": g["self_count"],
+                "shelves": g["shelves"],
+            }
+            for g in report["groups"]
+        ],
+    }
+    with transaction(conn):
+        execute(
+            conn,
+            """
+            INSERT INTO alerts
+                (ts, round_id, type, severity, poi_id, poi_name,
+                 item_id, sku_id, seller_id, payload, dedup_key,
+                 webhook_status, webhook_sent_at, webhook_resp, webhook_retry)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            ON CONFLICT(dedup_key) DO UPDATE SET
+                webhook_status = excluded.webhook_status,
+                webhook_sent_at = excluded.webhook_sent_at,
+                webhook_resp = excluded.webhook_resp,
+                webhook_retry = alerts.webhook_retry + 1
+            """,
+            (
+                report["ts"], cur_round["id"], "shelf_report",
+                "warning" if report["non_self_pois"] else "info",
+                None, None, None, None, None,
+                json.dumps(payload, ensure_ascii=False),
+                dedup_key,
+                status, sent_at, resp_text,
+            ),
+        )
+    log.info("shelf_report sent=%s code=%s total_pois=%d non_self_pois=%d",
+             status, result.status_code, report["total_pois"], report["non_self_pois"])
 
 
 def get_config(conn, key, default=None):
@@ -555,10 +739,17 @@ def run_one_round(conn: sqlite3.Connection, client: MtopClient,
         log.warning("booktips pass failed: %s", e)
 
     # 告警
-    alerts = detect_alerts(conn, round_db_id, prev_id)
-    inserted = persist_alerts(conn, alerts)
-    log.info("alerts: %d generated, %d new (after dedup)", len(alerts), len(inserted))
-    dispatch_webhooks(conn, inserted, dashboard_base)
+    webhook_mode = get_config(conn, "webhook_mode", "shelf_report")
+    inserted: list = []  # shelf_report 分支不写 inserted，关 round 时用得到
+    if webhook_mode == "per_alert":
+        alerts = detect_alerts(conn, round_db_id, prev_id)
+        inserted = persist_alerts(conn, alerts)
+        log.info("alerts: %d generated, %d new (after dedup)", len(alerts), len(inserted))
+        dispatch_webhooks(conn, inserted, dashboard_base)
+    else:
+        # shelf_report 模式：跳过 per-alert 检测与入库，只聚合推送
+        log.info("webhook_mode=shelf_report，跳过 per-alert detect/persist")
+        dispatch_webhooks(conn, [], dashboard_base)
 
     # 关 round
     finished = now_utc_iso()

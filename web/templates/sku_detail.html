@@ -79,7 +79,7 @@
             <tbody>
             {% for h in history %}
             <tr>
-                <td class="mono" style="font-size:11px;color:var(--text-2)">{{ h.started_at }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2)">{{ h.started_at | bj }}</td>
                 <td class="num">{{ h.price_int | price(h.price_dec) }}</td>
                 <td>
                     {% set hd = h.seller_name or (h.seller_id[:6] + '…') %}

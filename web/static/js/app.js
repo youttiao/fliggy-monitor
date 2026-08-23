@@ -38,12 +38,16 @@ async function toggleShelfWatch(poiId, itemId, skuId, target) {
 }
 
 /* 2. 设置页 → 测试 webhook */
-async function testWebhook(btn) {
+async function testWebhook(btn, kind) {
     btn.disabled = true;
     const orig = btn.textContent;
     btn.textContent = '推送中…';
     try {
-        const r = await fetch('/api/webhook/test', { method: 'POST' });
+        const r = await fetch('/api/webhook/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kind: kind || 'single' }),
+        });
         const j = await r.json();
         if (j.ok) {
             toast('✓ Webhook 已发送 (HTTP ' + j.status_code + ')', 'ok');
