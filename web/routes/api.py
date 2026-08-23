@@ -226,7 +226,7 @@ async def trigger_round_now(_=Depends(authmod.require_login)):
 
     try:
         active = subprocess.run(
-            ["systemctl", "is-active", "fliggy-monitor.service"],
+            ["/usr/bin/systemctl", "is-active", "fliggy-monitor.service"],  # noqa: S607
             capture_output=True, text=True, timeout=5,
         ).stdout.strip()
     except Exception as e:
@@ -240,7 +240,7 @@ async def trigger_round_now(_=Depends(authmod.require_login)):
     try:
         # Type=oneshot 服务 start 默认会等到命令跑完（~40s），用 --no-block 立刻返回
         subprocess.run(
-            ["systemctl", "start", "--no-block", "fliggy-monitor.service"],
+            ["/usr/bin/systemctl", "start", "--no-block", "fliggy-monitor.service"],  # noqa: S607
             check=True, timeout=5, capture_output=True, text=True,
         )
     except subprocess.CalledProcessError as e:
