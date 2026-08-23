@@ -1,0 +1,28 @@
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = ["fliggy-vps-handover", "data", "backups", ".venv"]
+
+[tool.ruff.lint]
+# Strict on syntax/security, lenient on FastAPI/starlette idioms and broad excepts
+select = ["E", "F", "W", "I", "UP", "B", "S", "N"]
+ignore = [
+    "B008",  # FastAPI Depends() in defaults is idiomatic
+    "TRY401",  # redundant exception in log.exception (we sometimes want both)
+    "BLE001",  # blind except is fine at boundaries (lifespan teardown, webhook sender)
+    "E501",  # line length already enforced by line-length setting; suppress per-line when needed
+    "S104",  # 0.0.0.0 binding is fine for our deploy (we bind 127.0.0.1 in systemd)
+    "S105",  # hardcoded "xuran888" password by design (v1 simplification)
+    "S106",  # same as above
+]
+per-file-ignores = {
+    "scripts/*" = ["S", "T"],  # ops scripts can be loose
+    "tests/*" = ["S", "B", "N"],
+}
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
