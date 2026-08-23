@@ -31,6 +31,16 @@ const COOKIE_DOMAINS = [
   ".tmall.com",
 ];
 
+// 部分 mtop token（_m_h5_tk / _m_h5_tk_enc）被浏览器存在分区 cookie 罐里（Chrome CHIPS），
+// 默认 chrome.cookies.getAll 看不到，必须带 partitionKey.topLevelSite 查。
+// 实测分区挂在 https://taobao.com 这个 top-level site 下。
+const PARTITIONED_TOP_LEVEL_SITES = [
+  "https://taobao.com",
+  "https://fliggy.com",
+  "https://www.taobao.com",
+  "https://www.fliggy.com",
+];
+
 // mobile window size（Chrome 最小 ~250×250；414×896 是 iPhone 11 portrait，H5 一般适配到这个尺寸）
 const MOBILE_W = 414;
 const MOBILE_H = 896;
@@ -56,6 +66,8 @@ async function findExistingH5Window() {
 async function grabAllCookies() {
   const all = {};
   const seen = new Set();
+
+  // 1) 非分区 cookie（cookie2 / t 等老牌 cookie 大多在这）
   for (const domain of COOKIE_DOMAINS) {
     let list = [];
     try {
@@ -70,6 +82,28 @@ async function grabAllCookies() {
       all[c.name] = c.value;
     }
   }
+
+  // 2) 分区 cookie（_m_h5_tk / _m_h5_tk_enc 在 CHIPS 下按 top-level site 分区存储）
+  for (const domain of COOKIE_DOMAINS) {
+    for (const tls of PARTITIONED_TOP_LEVEL_SITES) {
+      let list = [];
+      try {
+        list = await chrome.cookies.getAll({
+          domain,
+          partitionKey: { topLevelSite: tls },
+        });
+      } catch (e) {
+        continue;
+      }
+      for (const c of list) {
+        const key = c.name + "@" + (c.domain || domain) + "@partitioned";
+        if (seen.has(key)) continue;
+        seen.add(key);
+        all[c.name] = c.value;
+      }
+    }
+  }
+
   return all;
 }
 
