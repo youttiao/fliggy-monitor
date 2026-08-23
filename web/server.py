@@ -18,7 +18,7 @@ from fastapi.templating import Jinja2Templates
 
 from . import auth as authmod
 from . import db as dbmod
-from .routes import api_router, pages_router, sellers_router
+from .routes import api_router, cookie_sync_router, pages_router, sellers_router
 
 ROOT = Path(__file__).resolve().parent
 TEMPLATES_DIR = ROOT / "templates"
@@ -119,6 +119,7 @@ async def _redirect_to_login(request: Request, exc: authmod._RedirectToLogin):
 app.include_router(pages_router)
 app.include_router(api_router)
 app.include_router(sellers_router)
+app.include_router(cookie_sync_router)
 
 
 # 让 templates 模块内的代码能 import 这个实例
