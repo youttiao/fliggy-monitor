@@ -128,7 +128,14 @@ jobs:
             bash extensions/fliggy-cookie-sync/build.sh
 
             # 幂等迁移：新加的表/索引都靠 IF NOT EXISTS 兜底
-            sudo -u monitor .venv/bin/python3 scripts/init_db.py --no-baseline || true
+            # 必须用 web service 的运行用户跑，避免 SQLite WAL 文件归属错
+            WEB_USER=$(/usr/bin/systemctl show fliggy-web -p User --value 2>/dev/null || true)
+            if [ -z "$WEB_USER" ]; then WEB_USER=root; fi
+            if id "$WEB_USER" &>/dev/null; then
+              sudo -u "$WEB_USER" .venv/bin/python3 scripts/init_db.py --no-baseline || true
+            else
+              .venv/bin/python3 scripts/init_db.py --no-baseline || true
+            fi
 
             # cookies.json 必须保持原样，绝不覆盖
             if [ -f /etc/fliggy-monitor/cookies.json ]; then
