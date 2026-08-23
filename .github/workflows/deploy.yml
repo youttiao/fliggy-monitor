@@ -116,20 +116,21 @@ jobs:
             set -e
             cd /opt/fliggy-monitor
             if [ ! -d .venv ]; then
-              sudo -u monitor /usr/bin/python3 -m venv .venv
+              /usr/bin/python3 -m venv .venv
             fi
-            sudo -u monitor .venv/bin/pip install --upgrade pip -q
-            sudo -u monitor .venv/bin/pip install -r requirements.txt -q
+            .venv/bin/pip install --upgrade pip -q
+            .venv/bin/pip install -r requirements.txt -q
+            mkdir -p logs
             # cookies.json 必须保持原样，绝不覆盖
             if [ -f /etc/fliggy-monitor/cookies.json ]; then
-              echo "cookies.json preserved at /etc/fliggy-monitor/cookies.json"
+              echo "cookies.json preserved at /etc/fliggy-monitor (excluded from rsync)"
             else
               echo "WARNING: /etc/fliggy-monitor/cookies.json missing — monitor will not scrape until injected"
             fi
-            sudo /usr/bin/systemctl restart fliggy-web || true
-            sudo /usr/bin/systemctl restart fliggy-cookies.timer || true
+            /usr/bin/systemctl restart fliggy-web || true
+            /usr/bin/systemctl restart fliggy-monitor.timer || true
             sleep 3
-            sudo /usr/bin/systemctl status fliggy-web --no-pager | head -10 || true
+            /usr/bin/systemctl status fliggy-web --no-pager | head -10 || true
             echo "=== deploy done: $(date -Iseconds) ==="
           REMOTE
         env:
