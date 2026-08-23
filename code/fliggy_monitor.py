@@ -695,11 +695,13 @@ def run_one_round(conn: sqlite3.Connection, client: MtopClient,
         except Exception as e:
             log.exception("poi %s failed: %s", poi["poi_id"], e)
             error_summary.append(f"{poi['poi_id']}: {type(e).__name__}")
+            # 失败时只记 last_status / last_error，不动 last_scanned_at
+            # —— 那个字段语义是「最近一次成功扫描」，失败不算有效一次扫描。
             execute(
                 conn,
-                "UPDATE pois SET last_scanned_at = ?, last_status = 'failed', last_error = ? "
+                "UPDATE pois SET last_status = 'failed', last_error = ? "
                 "WHERE poi_id = ?",
-                (now_utc_iso(), str(e)[:300], poi["poi_id"]),
+                (str(e)[:300], poi["poi_id"]),
             )
             continue
 

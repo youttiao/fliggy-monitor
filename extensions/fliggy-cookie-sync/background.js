@@ -15,6 +15,9 @@ const REQUIRED = ["_m_h5_tk", "_m_h5_tk_enc", "cookie2", "t"];
 const H5_URL =
   "https://market.m.taobao.com/app/trip/rx-trip-ticket/pages/detail/index.html?poiId=1345";
 
+// H5 入口的 URL 前缀，用于识别「已经开着的飞猪窗口」（登录跳转后 URL 会变，但前缀不变）
+const H5_URL_PREFIX = "https://market.m.taobao.com/app/trip/";
+
 const COOKIE_DOMAINS = [
   ".taobao.com",
   ".m.taobao.com",
@@ -32,6 +35,19 @@ const MOBILE_H = 896;
 const GRACE_MS = 4000;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 在所有窗口里找一个已经打开的飞猪 H5 页（用户登录后页面可能跳走，但 URL 前缀不变）。
+// 找到就返回 window，找不到返回 null —— 登录态过期需要重登时复用同一窗口，
+// 这样用户不用反复面对一个又一个新弹窗。
+async function findExistingH5Window() {
+  const wins = await chrome.windows.getAll({ populate: true });
+  for (const w of wins) {
+    for (const tab of w.tabs || []) {
+      if ((tab.url || "").startsWith(H5_URL_PREFIX)) return w;
+    }
+  }
+  return null;
+}
 
 async function grabAllCookies() {
   const all = {};
@@ -104,20 +120,33 @@ async function autoSync({ endpoint, secret }) {
   }
 
   let win = null;
+  // 我们自己打开的窗口才在 finally 关掉；复用的窗口除非用户手动关否则留着，
+  // 这样用户登录失败多次重试时不会被反复弹新窗口。
+  let openedHere = false;
+  // 缺 cookie 时把窗口置前并保留，用户需要在里面手动登录。
+  let keepOpen = false;
   try {
-    log("open", "打开手机尺寸窗口访问飞猪 H5…");
-    win = await chrome.windows.create({
-      url: H5_URL,
-      width: MOBILE_W,
-      height: MOBILE_H,
-      focused: false,
-      type: "normal",
-    });
-    const tabId = win.tabs?.[0]?.id;
-    if (!tabId) throw new Error("打开窗口后没拿到 tabId");
+    log("open", "准备飞猪 H5 窗口…");
+    const existing = await findExistingH5Window();
+    if (existing) {
+      log("reuse", "复用已打开的飞猪窗口…");
+      win = existing;
+      await chrome.windows.update(win.id, { focused: true }).catch(() => {});
+    } else {
+      win = await chrome.windows.create({
+        url: H5_URL,
+        width: MOBILE_W,
+        height: MOBILE_H,
+        focused: false,
+        type: "normal",
+      });
+      openedHere = true;
+      const tabId = win.tabs?.[0]?.id;
+      if (!tabId) throw new Error("打开窗口后没拿到 tabId");
 
-    log("load", "等待页面加载…");
-    await waitForTabComplete(tabId);
+      log("load", "等待页面加载…");
+      await waitForTabComplete(tabId);
+    }
 
     log("grace", `页面已就绪，等待 ${GRACE_MS / 1000}s 让 cookie 落地…`);
     await sleep(GRACE_MS);
@@ -126,11 +155,18 @@ async function autoSync({ endpoint, secret }) {
     const cookies = await grabAllCookies();
     const missing = REQUIRED.filter((k) => !cookies[k]);
     if (missing.length) {
+      // 把窗口拉到前台，让用户能直接在里面登录
+      if (win?.id != null) {
+        try {
+          await chrome.windows.update(win.id, { focused: true });
+        } catch {}
+      }
+      keepOpen = true;
       finish({
         ok: false,
         error:
           `缺少必需 cookie: ${missing.join(", ")}。<br>` +
-          `请在刚才弹出的窗口里登录飞猪账号，然后点「重试」`,
+          `请在已弹出的飞猪窗口里登录账号，登录后点「立即同步」重试`,
         cookiesCount: Object.keys(cookies).length,
       });
       return;
@@ -156,7 +192,10 @@ async function autoSync({ endpoint, secret }) {
   } catch (e) {
     finish({ ok: false, error: String(e?.message || e) });
   } finally {
-    if (win?.id != null) {
+    // 只有「我们自己打开的窗口」且「不需要保留」时才关。
+    // 缺 cookie 路径下 keepOpen=true，窗口留着给用户登录；
+    // 上传失败/异常路径下窗口也留着，方便用户排错时能看到页面状态。
+    if (openedHere && !keepOpen && win?.id != null) {
       try {
         await chrome.windows.remove(win.id);
       } catch {}
