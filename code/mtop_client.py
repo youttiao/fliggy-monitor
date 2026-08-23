@@ -12,7 +12,7 @@ import hashlib
 import json
 import subprocess
 import time
-from selectors import (
+from fliggy_selectors import (
     APP_KEY,
     BOOKTIPS_API,
     BOOKTIPS_DEFAULT_DATA,

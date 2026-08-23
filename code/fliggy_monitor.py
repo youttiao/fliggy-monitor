@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "code"))
 
-from selectors import SELF_SELLER_ID  # noqa: E402
+from fliggy_selectors import SELF_SELLER_ID  # noqa: E402
 
 from mtop_client import MtopClient, parse_seller_info, parse_ticket_cells  # noqa: E402
 
