@@ -63,6 +63,64 @@ async def toggle_watch(
     return {"ok": True, "seller_id": seller_id, "watched": watched}
 
 
+@router.post("/shelves/watch")
+async def toggle_shelf_watch(
+    request: Request,
+    body: dict[str, Any] = Body(...),
+    _=Depends(authmod.require_login),
+):
+    """货架级别关注 toggle —— 只对关注的 (poi,item,sku) 推 webhook。
+
+    body: {poi_id: str, item_id: str, sku_id: str, watched: bool, notes?: str}
+    """
+    conn = _conn(request)
+    poi_id = (body.get("poi_id") or "").strip()
+    item_id = (body.get("item_id") or "").strip()
+    sku_id = (body.get("sku_id") or "").strip()
+    watched = bool(body.get("watched", False))
+    notes = (body.get("notes") or None)
+    if not (poi_id and item_id and sku_id):
+        return JSONResponse(
+            {"ok": False, "error": "poi_id / item_id / sku_id 必填"},
+            status_code=400,
+        )
+    dbmod.upsert_shelf_watch(
+        conn,
+        poi_id=poi_id, item_id=item_id, sku_id=sku_id,
+        is_watched=watched, notes=notes,
+    )
+    return {"ok": True, "poi_id": poi_id, "item_id": item_id,
+            "sku_id": sku_id, "watched": watched}
+
+
+@router.get("/shelves/watched")
+async def list_watched_shelves(
+    request: Request,
+    poi_id: str | None = None,
+    _=Depends(authmod.require_login),
+):
+    """列出所有被关注的货架（可按 POI 过滤）。"""
+    conn = _conn(request)
+    where = ["w.is_watched = 1"]
+    params: list[Any] = []
+    if poi_id:
+        where.append("w.poi_id = ?")
+        params.append(poi_id)
+    sql = f"""
+        SELECT w.poi_id, w.item_id, w.sku_id, w.notes,
+               w.created_at, w.updated_at,
+               c.sku_name, c.price_int, c.price_dec, c.seller_id, c.is_self
+        FROM shelf_watch w
+        LEFT JOIN cells_snapshot c
+               ON c.poi_id = w.poi_id AND c.item_id = w.item_id AND c.sku_id = w.sku_id
+              AND c.round_id = (SELECT id FROM rounds ORDER BY started_at DESC LIMIT 1)
+        {'WHERE ' + ' AND '.join(where) if where else ''}
+        ORDER BY w.updated_at DESC
+    """
+    rows = dbmod.query(conn, sql, params) or []
+    return [dict(r) for r in rows]
+
+
 @router.post("/webhook/test")
 async def webhook_test(request: Request, _=Depends(authmod.require_login)):
     conn = _conn(request)

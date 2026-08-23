@@ -185,14 +185,22 @@ def poi_cells(
     sql = f"""
         SELECT c.*, s.seller_name, s.shop_jump_url, s.service_stats,
                e.display_name AS enrichment_name, e.is_watched AS watched,
-               e.notes AS enrichment_notes, e.priority AS enrichment_priority
+               e.notes AS enrichment_notes, e.priority AS enrichment_priority,
+               w.is_watched AS shelf_watched,
+               w.notes AS shelf_notes
         FROM cells_snapshot c
         LEFT JOIN sellers s ON s.seller_id = c.seller_id
         LEFT JOIN seller_enrichment e ON e.seller_id = c.seller_id
+        LEFT JOIN shelf_watch w
+               ON w.poi_id = c.poi_id
+              AND w.item_id = c.item_id
+              AND w.sku_id  = c.sku_id
+              AND w.is_watched = 1
         WHERE {' AND '.join(where)}
         ORDER BY
             c.is_self DESC,                       -- 自营先行
-            COALESCE(e.is_watched, 0) DESC,       -- 关注的次之
+            COALESCE(w.is_watched, 0) DESC,       -- 货架关注次之
+            COALESCE(e.is_watched, 0) DESC,       -- 卖家关注的次之
             COALESCE(e.priority, 0) DESC,
             c.cell_type,
             c.price_int,
@@ -342,6 +350,52 @@ def upsert_seller_enrichment(
                 now,
                 now,
                 created_by,
+            ),
+        )
+
+
+def is_shelf_watched(conn: sqlite3.Connection, poi_id: str, item_id: str, sku_id: str) -> bool:
+    """查 (poi, item, sku) 是否在 shelf_watch 表里被关注。"""
+    row = query(
+        conn,
+        "SELECT 1 FROM shelf_watch WHERE poi_id=? AND item_id=? AND sku_id=? AND is_watched=1",
+        (poi_id, item_id, sku_id),
+        one=True,
+    )
+    return bool(row)
+
+
+def upsert_shelf_watch(
+    conn: sqlite3.Connection,
+    *,
+    poi_id: str,
+    item_id: str,
+    sku_id: str,
+    is_watched: bool,
+    notes: str | None = None,
+    created_by: str = "admin",
+) -> None:
+    """写入 / 更新 (poi, item, sku) 的关注标记。"""
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with transaction(conn):
+        execute(
+            conn,
+            """
+            INSERT INTO shelf_watch
+                (poi_id, item_id, sku_id, is_watched, notes,
+                 created_at, updated_at, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(poi_id, item_id, sku_id) DO UPDATE SET
+                is_watched = excluded.is_watched,
+                notes      = excluded.notes,
+                updated_at = excluded.updated_at
+            """,
+            (
+                poi_id, item_id, sku_id,
+                1 if is_watched else 0,
+                notes,
+                now, now, created_by,
             ),
         )
 

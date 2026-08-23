@@ -45,13 +45,15 @@
         <h3>{{ ct }}</h3>
         <span class="count">{{ cells | length }} 个货架</span>
         <div style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-2);">
-            {% set ns = namespace(self=0, watched=0, other=0) %}
+            {% set ns = namespace(self=0, watched=0, shelf=0, other=0) %}
             {% for c in cells %}
                 {% if c.is_self %}{% set ns.self = ns.self + 1 %}
+                {% elif c.shelf_watched %}{% set ns.shelf = ns.shelf + 1 %}
                 {% elif c.watched %}{% set ns.watched = ns.watched + 1 %}
                 {% else %}{% set ns.other = ns.other + 1 %}{% endif %}
             {% endfor %}
             <span style="color:var(--phosphor)">● {{ ns.self }}</span> ·
+            <span style="color:var(--amber)">☆ {{ ns.shelf }}</span> ·
             <span style="color:var(--cyan)">★ {{ ns.watched }}</span> ·
             <span>{{ ns.other }}</span>
         </div>
@@ -64,12 +66,13 @@
                 <th style="width:10%">销量</th>
                 <th style="width:30%">卖家</th>
                 <th>itemId / skuId</th>
+                <th style="width:56px;text-align:center;">关注</th>
             </tr>
         </thead>
         <tbody>
         {% for c in cells %}
         {% set display = c.enrichment_name or c.seller_name or (c.seller_id[:6] + '…') %}
-        <tr class="{% if c.is_self %}sku-row--self{% elif c.watched %}sku-row--watched{% endif %}">
+        <tr class="{% if c.is_self %}sku-row--self{% elif c.watched %}sku-row--watched{% endif %}{% if c.shelf_watched %} sku-row--shelf-watch{% endif %}">
             <td class="sku-name">
                 {% if c.is_self %}<span class="role-chip role-chip--self">SELF</span>
                 {% elif c.watched %}<span class="role-chip role-chip--watched">★ WATCH</span>
@@ -85,6 +88,14 @@
                 {% endif %}
             </td>
             <td class="id">{{ c.item_id[:10] }}… / {{ c.sku_id[:10] }}…</td>
+            <td style="text-align:center;">
+                <button type="button"
+                        class="shelf-watch-btn {% if c.shelf_watched %}on{% endif %}"
+                        title="{% if c.shelf_watched %}已关注 — 该货架出现非自营时会推送 webhook{% else %}点此关注 — 仅对该货架出现非自营时推送 webhook{% endif %}"
+                        onclick="toggleShelfWatch('{{ c.poi_id }}', '{{ c.item_id }}', '{{ c.sku_id }}', this)">
+                    {% if c.shelf_watched %}★{% else %}☆{% endif %}
+                </button>
+            </td>
         </tr>
         {% endfor %}
         </tbody>

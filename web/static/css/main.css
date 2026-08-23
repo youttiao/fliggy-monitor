@@ -274,6 +274,34 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .sku-row--self    { box-shadow: inset 2px 0 0 var(--phosphor); }
 .sku-row--watched { box-shadow: inset 2px 0 0 var(--cyan); }
 .sku-row--alert   { box-shadow: inset 2px 0 0 var(--amber); }
+/* 货架关注：用琥珀色左色条 + 整行轻微 amber 底色 */
+.sku-row--shelf-watch {
+    box-shadow: inset 2px 0 0 var(--amber);
+    background: rgba(229, 168, 71, 0.04);
+}
+
+/* 货架关注按钮（POI 详情页每行末尾的 ☆/★） */
+.shelf-watch-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: var(--r-1);
+    color: var(--text-3);
+    font-size: 16px; line-height: 1;
+    cursor: pointer;
+    transition: background 120ms, color 120ms, border-color 120ms;
+}
+.shelf-watch-btn:hover {
+    background: var(--bg-2);
+    color: var(--amber);
+    border-color: rgba(229, 168, 71, 0.4);
+}
+.shelf-watch-btn.on {
+    background: rgba(229, 168, 71, 0.12);
+    border-color: rgba(229, 168, 71, 0.4);
+    color: var(--amber);
+}
 
 .role-chip {
     display: inline-flex; align-items: center; gap: 4px;

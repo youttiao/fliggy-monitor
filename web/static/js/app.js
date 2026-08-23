@@ -1,6 +1,6 @@
 /* 飞猪哨兵 · 客户端微交互 */
 
-/* 1. SKU 行的关注 toggle（HTMX-style fetch；失败时回滚） */
+/* 1. 卖家行的关注 toggle（HTMX-style fetch；失败时回滚） */
 async function toggleWatch(sellerId, target) {
     const desired = !target.classList.contains('on');
     target.classList.toggle('on', desired);
@@ -14,6 +14,26 @@ async function toggleWatch(sellerId, target) {
     } catch (e) {
         target.classList.toggle('on', !desired);  // 回滚
         toast('关注状态保存失败：' + e.message, 'err');
+    }
+}
+
+/* 1b. 货架行的关注 toggle —— 通知后端「这个 cell 一旦出现非自营就推 webhook」 */
+async function toggleShelfWatch(poiId, itemId, skuId, target) {
+    const desired = !target.classList.contains('on');
+    const orig = target.textContent.trim();
+    target.classList.toggle('on', desired);
+    target.textContent = desired ? '★' : '☆';
+    try {
+        const r = await fetch('/api/shelves/watch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ poi_id: poiId, item_id: itemId, sku_id: skuId, watched: desired }),
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+    } catch (e) {
+        target.classList.toggle('on', !desired);  // 回滚
+        target.textContent = orig;
+        toast('货架关注保存失败：' + e.message, 'err');
     }
 }
 

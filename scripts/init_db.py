@@ -106,6 +106,21 @@ CREATE TABLE IF NOT EXISTS seller_enrichment (
 CREATE INDEX IF NOT EXISTS idx_seller_enrich_watched ON seller_enrichment(is_watched);
 CREATE INDEX IF NOT EXISTS idx_seller_enrich_priority ON seller_enrichment(priority DESC);
 
+CREATE TABLE IF NOT EXISTS shelf_watch (
+    -- 用户在 POI 详情页给特定 (poi, item, sku) 打的关注标记
+    -- 比 seller_enrichment.is_watched 更细；只对打了标的 cell 触发 webhook
+    poi_id      TEXT NOT NULL,
+    item_id     TEXT NOT NULL,
+    sku_id      TEXT NOT NULL,
+    is_watched  INTEGER NOT NULL DEFAULT 1,
+    notes       TEXT,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL,
+    created_by  TEXT,
+    PRIMARY KEY (poi_id, item_id, sku_id)
+);
+CREATE INDEX IF NOT EXISTS idx_shelf_watch_watched ON shelf_watch(is_watched);
+
 CREATE TABLE IF NOT EXISTS pois (
     poi_id          TEXT PRIMARY KEY,
     name            TEXT NOT NULL,

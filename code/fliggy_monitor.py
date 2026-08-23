@@ -392,7 +392,13 @@ def persist_alerts(conn: sqlite3.Connection, alerts: list[dict]) -> list[dict]:
 
 def dispatch_webhooks(conn: sqlite3.Connection, alerts: list[dict],
                       dashboard_base: str | None) -> None:
-    """按 config.webhook_rules + URL 推送新增告警。"""
+    """按 config.webhook_rules + URL 推送新增告警。
+
+    货架过滤：v1 默认行为是「所有告警按规则推」。从这一版起增加**货架级 gate**：
+    只对 `shelf_watch.is_watched=1` 的 cell 推 webhook；
+    且仅在该 cell 的当前供应商不是自营时推（self_missing 例外：货架消失/被替换即为非自营）。
+    没标的货架继续入库 + 写 dashboard，但不骚扰 IM。
+    """
     url = get_config(conn, "webhook_url")
     if not url or url == "null":
         log.debug("webhook 未配置，跳过推送")
@@ -405,10 +411,38 @@ def dispatch_webhooks(conn: sqlite3.Connection, alerts: list[dict],
         platform=get_config(conn, "webhook_platform", "auto"),
     )
 
+    cur_round = query(conn, "SELECT id FROM rounds ORDER BY id DESC LIMIT 1", one=True)
+    cur_round_id = cur_round["id"] if cur_round else None
+
     for a in alerts:
         if not rules.get(a["type"], False):
             log.debug("规则关闭：type=%s", a["type"])
             continue
+
+        # ── 货架级过滤 ──
+        watched = query(
+            conn,
+            "SELECT 1 FROM shelf_watch WHERE poi_id=? AND item_id=? AND sku_id=? AND is_watched=1",
+            (a["poi_id"], a["item_id"], a["sku_id"]),
+            one=True,
+        )
+        if not watched:
+            log.debug("货架未关注：poi=%s item=%s sku=%s",
+                      a["poi_id"], a["item_id"][:8], a["sku_id"][:8])
+            continue
+
+        # self_missing 永远满足「供应商非自营」（已下 / 被换），直接推
+        if a["type"] != "self_missing":
+            cur_cell = query(
+                conn,
+                "SELECT is_self FROM cells_snapshot WHERE round_id=? AND poi_id=? AND item_id=? AND sku_id=?",
+                (cur_round_id, a["poi_id"], a["item_id"], a["sku_id"]),
+                one=True,
+            )
+            if cur_cell and cur_cell["is_self"]:
+                log.debug("货架关注但供应商为自营，跳过：%s", a["type"])
+                continue
+
         rendered = notifier.render_alert(
             alert_type=a["type"],
             severity=a["severity"],
