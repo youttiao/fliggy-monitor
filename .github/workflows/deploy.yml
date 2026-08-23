@@ -56,13 +56,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: tar
         run: |
+          mkdir -p data
           tar czf fliggy-monitor-${GITHUB_SHA::7}.tar.gz \
             --exclude='*.pyc' --exclude='__pycache__' \
             --exclude='.git' --exclude='*.db' --exclude='backups/*.db' \
             --exclude='cookies.json' --exclude='.cache' \
             --exclude='.venv' --exclude='screenshots' \
             --exclude='fliggy-monitor-*.tar.gz' \
-            code/ data/ web/ scripts/ tests/ docs/ requirements.txt README.md .github
+            code/ data/ web/ scripts/ tests/ docs/ requirements.txt README.md .github pyproject.toml
+        shell: bash
       - name: sha256
         run: sha256sum fliggy-monitor-*.tar.gz | tee fliggy-monitor-${GITHUB_SHA::7}.sha256
       - uses: actions/upload-artifact@v4
