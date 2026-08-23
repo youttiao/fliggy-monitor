@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}{{ seller.display_name or seller.seller_name or (seller.seller_id[:6] + '…') }}{% endblock %}
+
+{% block content %}
+{% set display = seller.display_name or seller.seller_name or (seller.seller_id[:6] + '…') %}
+{% set unidentified = not seller.display_name and not seller.seller_name %}
+<div class="crumb"><a href="/sellers">卖家</a> › {{ seller.seller_id }}</div>
+
+<div class="page-head">
+    <div>
+        <h1>
+            {% if seller.is_self %}<span class="role-chip role-chip--self">SELF</span>
+            {% elif seller.is_watched %}<span class="role-chip role-chip--watched">★</span>
+            {% elif unidentified %}<span class="role-chip role-chip--new">未识别</span>
+            {% endif %}
+            {{ display }}
+        </h1>
+        <p class="sub mono">{{ seller.seller_id }}</p>
+    </div>
+    <div class="spacer"></div>
+    {% if seller.shop_jump_url %}
+    <a href="{{ seller.shop_jump_url }}" target="_blank" rel="noopener" class="btn btn--ghost">打开店铺 ↗</a>
+    {% endif %}
+</div>
+
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+    <div class="kpi">
+        <div class="label">货架数（累计）</div>
+        <div class="value">{{ seller.total_cells or 0 }}</div>
+    </div>
+    <div class="kpi">
+        <div class="label">跨 POI 数</div>
+        <div class="value">{{ pois | length }}</div>
+    </div>
+    <div class="kpi">
+        <div class="label">首次出现</div>
+        <div class="value mono" style="font-size:18px;">{{ (seller.first_seen_at or '')[:10] }}</div>
+    </div>
+    <div class="kpi">
+        <div class="label">最近出现</div>
+        <div class="value mono" style="font-size:18px;">{{ (seller.last_seen_at or '')[:10] }}</div>
+    </div>
+</div>
+
+{% if pois %}
+<div class="card">
+    <div class="card-head"><h2>覆盖的 POI</h2></div>
+    <div class="card-body" style="display:flex;gap:var(--s-2);flex-wrap:wrap;">
+        {% for p in pois %}
+        <a href="/poi/{{ p.poi_id }}?focus=seller:{{ seller.seller_id }}" class="pill" style="text-decoration:none;background:var(--bg-2);border:1px solid var(--line);padding:4px 12px;border-radius:999px;font-size:12px;">
+            {{ p.poi_name }} <span style="color:var(--text-3);margin-left:4px;">{{ p.cell_count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-head"><h2>编辑</h2>
+        <span class="tag">卖家画像</span>
+    </div>
+    <div class="card-body">
+        <form method="post" action="/sellers/{{ seller.seller_id }}">
+            <div class="field">
+                <label for="display_name">显示名（覆盖 booktips 自动名）</label>
+                <input type="text" id="display_name" name="display_name" value="{{ seller.display_name or '' }}"
+                       placeholder="例如：北京XX旅游专营店">
+            </div>
+            <div class="field">
+                <label style="display:flex;align-items:center;gap:var(--s-2);text-transform:none;letter-spacing:normal;">
+                    <input type="checkbox" name="is_watched" {% if seller.is_watched %}checked{% endif %} style="width:auto;">
+                    ★ 标记为「关注卖家」（cyan 高亮 + 告警加权）
+                </label>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="priority">优先级（0-3）</label>
+                    <select id="priority" name="priority">
+                        {% for p in [0,1,2,3] %}
+                        <option value="{{ p }}" {% if (seller.priority or 0) == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="tags">标签（逗号分隔）</label>
+                    <input type="text" id="tags" name="tags"
+                           value="{% if seller.tags %}{{ seller.tags | replace('[','') | replace(']','') | replace('"','') }}{% endif %}"
+                           placeholder="vip, competitor, black-list">
+                </div>
+            </div>
+            <div class="field">
+                <label for="notes">备注</label>
+                <input type="text" id="notes" name="notes" value="{{ seller.notes or '' }}"
+                       placeholder="例：已联系 / 待观察 / 套牌嫌疑">
+            </div>
+            <button type="submit" class="btn">保存修改</button>
+        </form>
+    </div>
+</div>
+
+{% if recent %}
+<div class="card">
+    <div class="card-head"><h2>最近的货架</h2><span class="tag">最近 30 行</span></div>
+    <div class="card-body card-body--p0">
+        <table class="data">
+            <thead><tr><th>POI</th><th>SKU</th><th class="num">价格</th><th>本轮时间</th><th>首次入库</th></tr></thead>
+            <tbody>
+            {% for r in recent %}
+            <tr>
+                <td><a href="/poi/{{ r.poi_id }}">{{ r.poi_name }}</a></td>
+                <td>
+                    <a href="/poi/{{ r.poi_id }}/sku/{{ r.item_id }}/{{ r.sku_id }}">{{ r.sku_name or '—' }}</a>
+                </td>
+                <td class="num">{{ r.price_int or '?' }}{{ r.price_dec or '' }}{{ r.price_suffix or '' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.round_started_at or '' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.first_seen_at or '' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

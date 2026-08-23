@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ poi.name }} · {{ poi.poi_id }}{% endblock %}
+
+{% block content %}
+<div class="crumb"><a href="/">Dashboard</a> › POI · {{ poi.poi_id }}</div>
+
+<div class="page-head">
+    <div>
+        <h1>{{ poi.name }}</h1>
+        <p class="sub mono">
+            poi_id={{ poi.poi_id }}
+            {% if poi.tb_cn %}· tb_cn={{ poi.tb_cn }}{% endif %}
+            {% if poi.h5_url %}· <a href="{{ poi.h5_url }}" target="_blank" rel="noopener">H5 链接 ↗</a>{% endif %}
+        </p>
+    </div>
+    <div class="spacer"></div>
+    {% set all_count = ordered_types | map('length') | sum %}
+    <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
+        本轮 {{ all_count }} 个货架 · {{ ordered_types | length }} 个商品类型
+    </span>
+</div>
+
+<div class="filter-bar" style="background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r-2);margin-bottom:var(--s-4);">
+    <label>商品类型：</label>
+    <a href="/poi/{{ poi.poi_id }}" class="{% if not cell_type %}active{% endif %}">全部</a>
+    {% for ct in ordered_types %}
+    <a href="/poi/{{ poi.poi_id }}?cell_type={{ ct }}" class="{% if cell_type == ct %}active{% endif %}">{{ ct }} <span style="color:var(--text-3)">·</span> <span class="mono">{{ grouped[ct] | length }}</span></a>
+    {% endfor %}
+    {% if seller_id %}
+    <span style="margin-left:auto;color:var(--cyan);">筛 seller={{ seller_id[:10] }}… <a href="/poi/{{ poi.poi_id }}" style="color:var(--text-2);margin-left:8px;">×</a></span>
+    {% endif %}
+</div>
+
+{% if not grouped %}
+<div class="card"><div class="card-body"><div class="empty">
+    <h3>本轮未抓到任何 cell</h3>
+    <p>可能：该 POI 临时下架 / API 返回空 / 监控脚本失败</p>
+</div></div></div>
+{% endif %}
+
+{% for ct in ordered_types %}
+{% set cells = grouped[ct] %}
+<div class="celltype-group">
+    <div class="celltype-head">
+        <h3>{{ ct }}</h3>
+        <span class="count">{{ cells | length }} 个货架</span>
+        <div style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-2);">
+            {% set ns = namespace(self=0, watched=0, other=0) %}
+            {% for c in cells %}
+                {% if c.is_self %}{% set ns.self = ns.self + 1 %}
+                {% elif c.watched %}{% set ns.watched = ns.watched + 1 %}
+                {% else %}{% set ns.other = ns.other + 1 %}{% endif %}
+            {% endfor %}
+            <span style="color:var(--phosphor)">● {{ ns.self }}</span> ·
+            <span style="color:var(--cyan)">★ {{ ns.watched }}</span> ·
+            <span>{{ ns.other }}</span>
+        </div>
+    </div>
+    <table class="sku-table">
+        <thead>
+            <tr>
+                <th style="width:32%">SKU</th>
+                <th style="width:14%">价格</th>
+                <th style="width:10%">销量</th>
+                <th style="width:30%">卖家</th>
+                <th>itemId / skuId</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for c in cells %}
+        {% set display = c.enrichment_name or c.seller_name or (c.seller_id[:6] + '…') %}
+        <tr class="{% if c.is_self %}sku-row--self{% elif c.watched %}sku-row--watched{% endif %}">
+            <td class="sku-name">
+                {% if c.is_self %}<span class="role-chip role-chip--self">SELF</span>
+                {% elif c.watched %}<span class="role-chip role-chip--watched">★ WATCH</span>
+                {% endif %}
+                <a href="/poi/{{ poi.poi_id }}/sku/{{ c.item_id }}/{{ c.sku_id }}" style="color:var(--text-0)">{{ c.sku_name or '—' }}</a>
+            </td>
+            <td class="price">
+                {{ c.price_int or '?' }}{{ c.price_dec or '' }}{{ c.price_suffix or '' }}
+            </td>
+            <td class="mono" style="color:var(--text-2)">{{ c.sold or '—' }}</td>
+            <td>
+                <a href="/sellers/{{ c.seller_id }}" style="font-size:13px;">{{ display }}</a>
+                {% if not c.seller_name and not c.enrichment_name %}
+                <span class="role-chip role-chip--new" style="margin-left:6px;">未识别</span>
+                {% endif %}
+            </td>
+            <td class="id">{{ c.item_id[:10] }}… / {{ c.sku_id[:10] }}…</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+{% endblock %}

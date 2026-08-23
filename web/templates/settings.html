@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}设置{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>设置</h1>
+        <p class="sub">Webhook · 自营 ID · 监控频率</p>
+    </div>
+    <div class="spacer"></div>
+</div>
+
+<form method="post" action="/settings">
+<div class="card">
+    <div class="card-head">
+        <h2>Webhook 推送</h2>
+        <span class="tag">飞书 / 钉钉</span>
+        <div class="spacer"></div>
+        <button type="button" class="btn btn--ghost" onclick="testWebhook(this)">测试推送</button>
+    </div>
+    <div class="card-body">
+        <div class="field">
+            <label for="webhook_url">Webhook URL</label>
+            <input type="text" id="webhook_url" name="webhook_url" value="{{ cfg.webhook_url or '' }}"
+                   placeholder="https://oapi.dingtalk.com/robot/send?access_token=…  或  https://open.feishu.cn/open-apis/bot/v2/hook/…">
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="webhook_platform">平台</label>
+                <select id="webhook_platform" name="webhook_platform">
+                    <option value="auto" {% if cfg.webhook_platform == 'auto' or cfg.webhook_platform == '"auto"' %}selected{% endif %}>auto（按 URL 自动识别）</option>
+                    <option value="dingtalk" {% if cfg.webhook_platform == 'dingtalk' %}selected{% endif %}>dingtalk（钉钉）</option>
+                    <option value="feishu" {% if cfg.webhook_platform == 'feishu' %}selected{% endif %}>feishu（飞书）</option>
+                    <option value="custom" {% if cfg.webhook_platform == 'custom' %}selected{% endif %}>custom（自定义）</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="webhook_secret">加签 secret（可选）</label>
+                <input type="text" id="webhook_secret" name="webhook_secret" value="{{ cfg.webhook_secret or '' }}"
+                       placeholder="钉钉加签 / 自定义 HMAC secret">
+            </div>
+        </div>
+        <div class="field">
+            <label>启用规则</label>
+            <div class="checkbox-grid">
+                {% set rules = cfg.webhook_rules if cfg.webhook_rules is mapping else {} %}
+                <label><input type="checkbox" name="rule_non_self_new" {% if rules.get('non_self_new') %}checked{% endif %}> 出现非自营 SKU</label>
+                <label><input type="checkbox" name="rule_price_alert" {% if rules.get('price_alert') %}checked{% endif %}> 价格异动</label>
+                <label><input type="checkbox" name="rule_self_missing" {% if rules.get('self_missing') %}checked{% endif %}> 自营缺位</label>
+                <label><input type="checkbox" name="rule_first_seller" {% if rules.get('first_seller') %}checked{% endif %}> 首次出现新卖家</label>
+                <label><input type="checkbox" name="rule_shelf_error" {% if rules.get('shelf_error') %}checked{% endif %}> 采集失败</label>
+                <label><input type="checkbox" name="rule_cookie_refresh_failed" {% if rules.get('cookie_refresh_failed') %}checked{% endif %}> Cookie 续期失败</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head"><h2>业务配置</h2></div>
+    <div class="card-body">
+        <div class="field-row">
+            <div class="field">
+                <label for="self_seller_id">自营 seller_id</label>
+                <input type="text" id="self_seller_id" name="self_seller_id" value="{{ cfg.self_seller_id or '' }}">
+            </div>
+            <div class="field">
+                <label for="self_seller_name">自营名称（展示用）</label>
+                <input type="text" id="self_seller_name" name="self_seller_name" value="{{ cfg.self_seller_name or '' }}">
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="polling_sec">监控频率（秒）</label>
+                <input type="number" id="polling_sec" name="polling_sec" value="{{ cfg.polling_sec }}" min="300" max="3600">
+            </div>
+            <div class="field">
+                <label for="site_name">站点名称</label>
+                <input type="text" id="site_name" name="site_name" value="{{ cfg.site_name or '' }}">
+            </div>
+        </div>
+        <button type="submit" class="btn">保存</button>
+    </div>
+</div>
+</form>
+
+{% if cfg.webhook_recent %}
+<div class="card">
+    <div class="card-head"><h2>最近推送</h2><span class="tag">最近 20 条</span></div>
+    <div class="card-body card-body--p0">
+        <table class="data">
+            <thead><tr><th>时间</th><th>结果</th><th>HTTP</th><th>响应</th></tr></thead>
+            <tbody>
+            {% for r in cfg.webhook_recent | reverse %}
+            <tr>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.ts or '?' }}</td>
+                <td>{% if r.ok %}<span style="color:var(--phosphor);">✓ sent</span>{% else %}<span style="color:var(--red);">✗ failed</span>{% endif %}</td>
+                <td class="num">{{ r.status_code or '—' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ (r.response or '')[:120] }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

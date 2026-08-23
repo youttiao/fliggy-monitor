@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% if no_data %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty">
+            <h3>还没有监控数据</h3>
+            <p>第一次启动，还没完成任何一轮扫描。</p>
+            <code>systemctl status fliggy-monitor.timer · journalctl -u fliggy-monitor.service -n 50</code>
+        </div>
+    </div>
+</div>
+{% else %}
+{% set k = namespace(total=0, self=0, non_self=0, sellers=0) %}
+{% for r in summary %}
+    {% set k.total = k.total + (r.cells_total or 0) %}
+    {% set k.self = k.self + (r.cells_self or 0) %}
+    {% set k.non_self = k.non_self + (r.cells_non_self or 0) %}
+    {% set k.sellers = k.sellers + (r.non_self_sellers or 0) %}
+{% endfor %}
+
+<div class="page-head">
+    <div>
+        <h1>Dashboard</h1>
+        <p class="sub mono">最近一轮 · {{ latest.round_id }} · {{ latest.started_at }}</p>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill" style="background:var(--bg-1);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11px;font-family:var(--font-mono);">
+        status=<span style="color:var(--phosphor)">{{ latest.status }}</span> · {{ latest.duration_ms or '?' }}ms
+    </span>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="label">货架总数（本轮）</div>
+        <div class="value" data-counter="{{ k.total }}">0</div>
+        <div class="delta">8 POI · 自营 + 外部</div>
+    </div>
+    <div class="kpi kpi--self">
+        <div class="label">自营 SKU</div>
+        <div class="value" data-counter="{{ k.self }}">0</div>
+        <div class="delta mono">{{ site.self_seller_id }}</div>
+    </div>
+    <div class="kpi kpi--alert">
+        <div class="label">非自营 SKU</div>
+        <div class="value" data-counter="{{ k.non_self }}">0</div>
+        <div class="delta">出现外部商家在卖</div>
+    </div>
+    <div class="kpi kpi--watched">
+        <div class="label">非自营卖家数</div>
+        <div class="value" data-counter="{{ k.sellers }}">0</div>
+        <div class="delta">distinct sellers</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h2>景区监控一览</h2>
+        <span class="tag">8 POI</span>
+        <div class="spacer"></div>
+        <a href="/alerts" class="btn btn--ghost">看告警 →</a>
+    </div>
+    <div class="card-body card-body--p0">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>POI</th>
+                    <th class="num">总货架</th>
+                    <th class="num">自营</th>
+                    <th class="num">非自营</th>
+                    <th class="num">外部卖家</th>
+                    <th>最近扫描</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in summary %}
+                <tr>
+                    <td>
+                        <a href="/poi/{{ r.poi_id }}" style="font-weight:500;">{{ r.name }}</a>
+                        <span class="mono" style="color:var(--text-3);margin-left:6px;font-size:11px;">{{ r.poi_id }}</span>
+                    </td>
+                    <td class="num">{{ r.cells_total or 0 }}</td>
+                    <td class="num" style="color:var(--phosphor)">{{ r.cells_self or 0 }}</td>
+                    <td class="num" style="color:var(--amber)">{{ r.cells_non_self or 0 }}</td>
+                    <td class="num">{{ r.non_self_sellers or 0 }}</td>
+                    <td class="mono" style="font-size:11px;color:var(--text-2)">{{ r.last_scanned_at or '—' }}</td>
+                    <td><a href="/poi/{{ r.poi_id }}" class="btn btn--ghost" style="padding:4px 12px;font-size:12px;">详情 →</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

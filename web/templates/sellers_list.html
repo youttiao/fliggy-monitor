@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}卖家管理{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>卖家管理</h1>
+        <p class="sub">{{ sellers | length }} 个卖家 · 自营 1 · 外部 {{ sellers | length - 1 }}</p>
+    </div>
+    <div class="spacer"></div>
+</div>
+
+<form method="get" action="/sellers" class="filter-bar" style="background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r-2);margin-bottom:var(--s-4);">
+    <label>筛：</label>
+    <a href="/sellers" class="{% if not watched and not unidentified %}active{% endif %}">全部</a>
+    <a href="/sellers?watched=1" class="{% if watched == '1' %}active{% endif %}">★ 只看关注</a>
+    <a href="/sellers?unidentified=1" class="{% if unidentified == '1' %}active{% endif %}">只看未识别</a>
+    <input type="search" name="q" value="{{ q or '' }}" placeholder="搜索 sellerId / 名称 / 备注…"
+           style="margin-left:auto;background:var(--bg-2);border:1px solid var(--line);color:var(--text-0);padding:4px 10px;border-radius:var(--r-1);font-family:var(--font-mono);font-size:12px;min-width:240px;">
+    {% if watched == '1' %}<input type="hidden" name="watched" value="1">{% endif %}
+    {% if unidentified == '1' %}<input type="hidden" name="unidentified" value="1">{% endif %}
+</form>
+
+<div class="card">
+    <div class="card-body card-body--p0">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:42%">卖家</th>
+                    <th style="width:8%">关注</th>
+                    <th class="num" style="width:8%">货架数</th>
+                    <th>首次出现</th>
+                    <th>最近出现</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for s in sellers %}
+            {% set display = s.display_name or s.seller_name or (s.seller_id[:6] + '…') %}
+            {% set unidentified = not s.display_name and not s.seller_name %}
+            <tr>
+                <td>
+                    {% if s.is_self %}<span class="role-chip role-chip--self">SELF</span>
+                    {% elif s.is_watched %}<span class="role-chip role-chip--watched">★</span>
+                    {% elif unidentified %}<span class="role-chip role-chip--new">未识别</span>
+                    {% endif %}
+                    <a href="/sellers/{{ s.seller_id }}" style="font-weight:500;">{{ display }}</a>
+                    {% if s.display_name and s.seller_name and s.display_name != s.seller_name %}
+                    <span class="mono" style="color:var(--text-3);margin-left:6px;font-size:11px;">auto: {{ s.seller_name }}</span>
+                    {% endif %}
+                    <div class="mono" style="color:var(--text-3);font-size:11px;margin-top:2px;">{{ s.seller_id }}</div>
+                </td>
+                <td>
+                    {% if s.is_watched %}<span style="color:var(--cyan);">★</span>
+                    {% else %}<span style="color:var(--text-3);">☆</span>
+                    {% endif %}
+                </td>
+                <td class="num">{{ s.total_cells or 0 }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.first_seen_at or '—' }}</td>
+                <td class="mono" style="font-size:11px;color:var(--text-2);">{{ s.last_seen_at or '—' }}</td>
+                <td><a href="/sellers/{{ s.seller_id }}" class="btn btn--ghost" style="padding:4px 12px;font-size:12px;">编辑 →</a></td>
+            </tr>
+            {% endfor %}
+            {% if not sellers %}
+            <tr><td colspan="6"><div class="empty"><h3>暂无卖家</h3><p>等第一轮监控跑完就会有数据了。</p></div></td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

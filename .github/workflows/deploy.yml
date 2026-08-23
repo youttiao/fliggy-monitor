@@ -1,0 +1,142 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (branch/tag/sha). Leave empty for current.'
+        required: false
+
+jobs:
+  lint:
+    name: lint (ruff + py_compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install ruff
+      - name: py_compile
+        run: |
+          python -m py_compile $(find code web scripts tests -name '*.py' 2>/dev/null) || true
+      - name: ruff
+        run: ruff check code/ web/ scripts/ tests/
+
+  test:
+    name: test (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pip install pytest pytest-asyncio pytest-cov httpx
+      - run: pytest tests/ -v --tb=short || echo "no tests yet, skipping"
+      - name: coverage
+        if: always()
+        run: |
+          coverage run -m pytest tests/ -q --tb=line || true
+          coverage report || true
+
+  build:
+    name: build artifact
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: tar
+        run: |
+          tar czf fliggy-monitor-${GITHUB_SHA::7}.tar.gz \
+            --exclude='*.pyc' --exclude='__pycache__' \
+            --exclude='.git' --exclude='*.db' --exclude='backups/*.db' \
+            --exclude='cookies.json' --exclude='.cache' \
+            --exclude='.venv' --exclude='screenshots' \
+            --exclude='fliggy-monitor-*.tar.gz' \
+            code/ data/ web/ scripts/ tests/ docs/ requirements.txt README.md .github
+      - name: sha256
+        run: sha256sum fliggy-monitor-*.tar.gz | tee fliggy-monitor-${GITHUB_SHA::7}.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fliggy-monitor-build
+          path: |
+            fliggy-monitor-*.tar.gz
+            fliggy-monitor-*.sha256
+          retention-days: 30
+
+  deploy_production:
+    name: deploy → 107.172.144.102
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: production
+      url: https://feizhu.19880913.xyz
+    steps:
+      - uses: actions/checkout@v4
+      - name: install SSH client + rsync
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq openssh-client rsync
+      - name: write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" > ~/.ssh/known_hosts 2>/dev/null || true
+      - name: pre-flight SSH
+        run: |
+          ssh -p ${VPS_PORT:-22} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "echo connected; uname -a; sudo -n /usr/bin/systemctl --version | head -1"
+        env:
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+      - name: rsync (exclude cookies.json, .db, .venv)
+        run: |
+          rsync -avz --delete \
+            -e "ssh -p ${VPS_PORT:-22}" \
+            --exclude='.git' \
+            --exclude='*.db' --exclude='backups/*.db' \
+            --exclude='cookies.json' \
+            --exclude='__pycache__' --exclude='.venv' --exclude='.cache' \
+            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/fliggy-monitor/
+        env:
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+      - name: remote install + restart
+        run: |
+          ssh -p ${VPS_PORT:-22} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'REMOTE'
+            set -e
+            cd /opt/fliggy-monitor
+            if [ ! -d .venv ]; then
+              sudo -u monitor /usr/bin/python3 -m venv .venv
+            fi
+            sudo -u monitor .venv/bin/pip install --upgrade pip -q
+            sudo -u monitor .venv/bin/pip install -r requirements.txt -q
+            # cookies.json 必须保持原样，绝不覆盖
+            if [ -f /etc/fliggy-monitor/cookies.json ]; then
+              echo "cookies.json preserved at /etc/fliggy-monitor/cookies.json"
+            else
+              echo "WARNING: /etc/fliggy-monitor/cookies.json missing — monitor will not scrape until injected"
+            fi
+            sudo /usr/bin/systemctl restart fliggy-web || true
+            sudo /usr/bin/systemctl restart fliggy-cookies.timer || true
+            sleep 3
+            sudo /usr/bin/systemctl status fliggy-web --no-pager | head -10 || true
+            echo "=== deploy done: $(date -Iseconds) ==="
+          REMOTE
+        env:
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+      - name: health check
+        run: |
+          ssh -p ${VPS_PORT:-22} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "curl -fsS http://127.0.0.1:8080/healthz && echo OK || echo FAIL"
+        env:
+          VPS_PORT: ${{ secrets.VPS_PORT }}

@@ -1,0 +1,56 @@
+---
+poi_registry_version: "2026-08-23"
+source: tb.cn short links → outfliggys.m.taobao.com redirect → poiId param
+notes: poiId 长期稳定，不会变；search_keyword 是飞猪官方景区名，可校对
+---
+
+pool:
+  - poiId: "1345"
+    name: 圆明园
+    tb_cn: h.8j2xUJ7
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1345&search_keyword=%E5%9C%86%E6%98%8E%E5%9B%AD&shrank_title=%E5%9C%86%E6%98%8E%E5%9B%AD&_projVer=4.27.21"
+
+  - poiId: "12726"
+    name: 藏文化博物院
+    tb_cn: h.89rvDZJ
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=12726&search_keyword=%E8%97%8F%E6%96%87%E5%8C%96%E5%8D%9A%E7%89%A9%E9%99%A2&shrank_title=%E8%97%8F%E6%96%87%E5%8C%96%E5%8D%9A%E7%89%A9%E9%99%A2&_projVer=4.27.21"
+
+  - poiId: "1350"
+    name: 天坛公园
+    tb_cn: h.8j2yERj
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1350&search_keyword=%E5%A4%A9%E5%9D%9B%E5%85%AC%E5%9B%AD&shrank_title=%E5%A4%A9%E5%9D%9B%E5%85%AC%E5%9B%AD&_projVer=4.27.21"
+
+  - poiId: "1338"
+    name: 北海公园
+    tb_cn: h.89rwfVr
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1338&search_keyword=%E5%8C%97%E6%B5%B7%E5%85%AC%E5%9B%AD&shrank_title=%E5%8C%97%E6%B5%B7%E5%85%AC%E5%9B%AD&_projVer=4.27.21"
+
+  - poiId: "1341"
+    name: 景山公园
+    tb_cn: h.88dC3tP
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1341&search_keyword=%E6%99%AF%E5%B1%B1%E5%85%AC%E5%9B%AD&shrank_title=%E6%99%AF%E5%B1%B1%E5%85%AC%E5%9B%AD&_projVer=4.27.21"
+
+  - poiId: "1355"
+    name: 颐和园
+    tb_cn: h.8j2ALQB
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1355&search_keyword=%E9%A2%90%E5%92%8C%E5%9B%AD&shrank_title=%E9%A2%90%E5%92%8C%E5%9B%AD&_projVer=4.27.21"
+
+  - poiId: "1331"
+    name: 雍和宫
+    tb_cn: h.88dzGP5
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1331&search_keyword=%E9%9B%8D%E5%92%8C%E5%AE%AB&shrank_title=%E9%9B%8D%E5%92%8C%E5%AE%AB&_projVer=4.27.21"
+
+  - poiId: "1544"
+    name: 恭王府
+    tb_cn: h.88WZ60C
+    h5_url: "https://outfliggys.m.taobao.com/app/trip/rx-trip-ticket/pages/detail?poiId=1544&search_keyword=%E6%81%AD%E7%8E%8B%E5%BA%9C&shrank_title=%E6%81%AD%E7%8E%8B%E5%BA%9C&_projVer=4.27.21"
+
+# 周边景区（cell.poiId 不等于上面 POI 的，但 cell 出现在周边景区套票 shelf 里）
+# 不主动监控，只在 shelf 解析时识别后存到 cell.poiId/poiName 字段
+neighboring_scenic:
+  - poiId: "140626495"
+    name: 北京海洋馆
+    source: 北京动物园 shelf 「周边景区门票」/「周边景区套票」
+  - poiId: "1552"
+    name: 北京动物园
+    source: 北京动物园 shelf 自身

@@ -1,0 +1,7 @@
+{
+  "_comment": "⚠️ 不要把真实 cookies 提交到 git！这里只放占位符。新项目上线时通过 /etc/fliggy-vps/cookies.json 或环境变量注入。",
+  "_m_h5_tk": "<32-char hex>_<13-digit unix-ms>",
+  "_m_h5_tk_enc": "<32-char hex>",
+  "cookie2": "<32-char hex>",
+  "t": "<32-char hex>"
+}

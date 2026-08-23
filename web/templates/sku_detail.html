@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ cell.sku_name[:30] }} · {{ poi_id }}{% endblock %}
+
+{% block content %}
+{% set display = cell.enrichment_name or cell.seller_name or (cell.seller_id[:6] + '…') %}
+<div class="crumb"><a href="/">Dashboard</a> › <a href="/poi/{{ poi_id }}">{{ cell.poi_name }}</a> › SKU</div>
+
+<div class="page-head">
+    <div>
+        <h1>{{ cell.sku_name }}</h1>
+        <p class="sub mono">
+            {{ cell.poi_name }} · itemId={{ cell.item_id }} · skuId={{ cell.sku_id }}
+        </p>
+    </div>
+    <div class="spacer"></div>
+    <div style="text-align:right;">
+        <div class="price mono" style="font-size:28px;color:var(--text-0);font-weight:500;">
+            {{ cell.price_int or '?' }}{{ cell.price_dec or '' }}{{ cell.price_suffix or '' }}
+        </div>
+        <div class="mono" style="color:var(--text-2);font-size:11px;">本轮价格</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head"><h2>卖家</h2></div>
+    <div class="card-body">
+        <div style="display:flex;align-items:center;gap:var(--s-3);">
+            {% if cell.is_self %}<span class="role-chip role-chip--self">SELF 自营</span>
+            {% elif cell.watched %}<span class="role-chip role-chip--watched">★ 关注中</span>
+            {% endif %}
+            <a href="/sellers/{{ cell.seller_id }}" style="font-size:15px;font-weight:500;">{{ display }}</a>
+            <span class="mono" style="color:var(--text-2);font-size:12px;">{{ cell.seller_id }}</span>
+            {% if cell.shop_jump_url %}
+            <a href="{{ cell.shop_jump_url }}" target="_blank" rel="noopener" class="btn btn--ghost" style="margin-left:auto;padding:4px 12px;font-size:12px;">打开店铺 ↗</a>
+            {% endif %}
+        </div>
+        {% if cell.enrichment_notes %}
+        <p style="margin:var(--s-3) 0 0;color:var(--text-1);font-size:13px;">
+            <span style="color:var(--text-2);">备注：</span>{{ cell.enrichment_notes }}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h2>价格历史</h2>
+        <span class="tag">最近 30 轮</span>
+        <div class="spacer"></div>
+        <span class="mono" style="font-size:11px;color:var(--text-2);">
+            {% if history | length > 1 %}
+                {% set first = history[-1] %}
+                {% set last = history[0] %}
+                {{ first.price_int }}{{ first.price_dec }} → {{ last.price_int }}{{ last.price_dec }}
+            {% endif %}
+        </span>
+    </div>
+    <div class="card-body card-body--p0">
+        {% set prices = [] %}
+        {% for h in history | reverse %}
+            {% set _ = prices.append((h.price_int | int(0)) if h.price_int else 0) %}
+        {% endfor %}
+        {% if prices | length > 1 %}
+        <div style="padding:var(--s-3) var(--s-4);">
+            <div class="spark">
+            {% set max_p = prices | max %}
+            {% set min_p = prices | min %}
+            {% set width = prices | length * 12 %}
+            <svg viewBox="0 0 {{ width }} 28" width="{{ width }}" height="28" preserveAspectRatio="none">
+                <polyline points="
+                    {% for p in prices %}{% set x = loop.index0 * 12 %}{% set y = 24 - ((p - min_p) / (max_p - min_p if max_p > min_p else 1) * 22) | round(1) %}{{ x }},{{ y }} {% endfor %}
+                " fill="none" stroke="#5EAEFF" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            </div>
+        </div>
+        {% endif %}
+        <table class="data">
+            <thead><tr><th>时间</th><th class="num">价格</th><th>卖家</th><th>自营</th></tr></thead>
+            <tbody>
+            {% for h in history %}
+            <tr>
+                <td class="mono" style="font-size:11px;color:var(--text-2)">{{ h.started_at }}</td>
+                <td class="num">{{ h.price_int or '?' }}{{ h.price_dec or '' }}{{ h.price_suffix or '' }}</td>
+                <td>
+                    {% set hd = h.seller_name or (h.seller_id[:6] + '…') %}
+                    <a href="/sellers/{{ h.seller_id }}">{{ hd }}</a>
+                </td>
+                <td>{% if h.is_self %}<span class="role-chip role-chip--self">SELF</span>{% else %}<span style="color:var(--text-3)">—</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

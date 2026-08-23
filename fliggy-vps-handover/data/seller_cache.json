@@ -1,0 +1,1016 @@
+{
+  "meta": {
+    "generated_by": "tools.fliggy_capture.build_seller_cache",
+    "self_seller_id": "2217592322543",
+    "seller_count": 16,
+    "sources": [
+      "req1717_yuanmingyuan_shelf",
+      "req1822_yuanmingyuan_booktips",
+      "req2094_zoo_shelf",
+      "req217_yuanyangqian_booktips",
+      "req2210_zoo_booktips",
+      "req56_zangwen_shelf",
+      "req60_yonghe_shelf",
+      "req66_yiheyuan_shelf",
+      "req68_jingshan_shelf",
+      "req73_beihai_shelf",
+      "req76_gongwangfu_shelf",
+      "req78_tiantan_shelf",
+      "reqN_yuanmingyuan_2215602156137_booktips",
+      "reqY_北京动物园_2215475082507_booktips",
+      "reqY_北京动物园_2217592322543_booktips",
+      "reqY_北京动物园_2218193682124_booktips",
+      "reqY_北京动物园_2218814252053_booktips",
+      "reqY_圆明园_2215491757739_booktips",
+      "reqY_圆明园_2216517143254_booktips",
+      "reqY_圆明园_2856437246_booktips",
+      "reqY_天坛公园_2215849058770_booktips",
+      "reqY_恭王府_2217682367335_booktips",
+      "reqY_雍和宫_2208633035419_booktips",
+      "reqY_颐和园_2216737962204_booktips",
+      "reqY_颐和园_4134013497_booktips"
+    ]
+  },
+  "sellers": {
+    "2208633035419": {
+      "sellerId": "2208633035419",
+      "sellerName": "北京续游旅行社专营店",
+      "sellerIcon": null,
+      "shopJumpUrl": "https://shop324780032.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "35w+"
+        }
+      ],
+      "itemIds": [
+        "991745353381",
+        "623382044891",
+        "743384488791"
+      ],
+      "cells": [
+        {
+          "itemId": "991745353381",
+          "skuId": "5962904749344",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "成人票",
+          "price": "¥27起",
+          "priceDecimal": "89",
+          "sold": "已售7000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "991745353381",
+          "skuId": "5962904749342",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "老人票",
+          "price": "¥18起",
+          "priceDecimal": "66",
+          "sold": "已售500+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "991745353381",
+          "skuId": "5962904749343",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "学生票",
+          "price": "¥18起",
+          "priceDecimal": "66",
+          "sold": "已售1000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "623382044891",
+          "skuId": "5287273532347",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "成人票",
+          "price": "¥30起",
+          "priceDecimal": "68",
+          "sold": "已售1.8万+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "743384488791",
+          "skuId": "6172994807059",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "大门票+电子语音讲解",
+          "price": "¥31起",
+          "priceDecimal": "76",
+          "sold": "已售2000+",
+          "cellType": "门票套餐"
+        }
+      ],
+      "isSelf": false
+    },
+    "2214330692836": {
+      "sellerId": "2214330692836",
+      "sellerName": "北京弘途国旅专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i1/2214330692836/O1CN01ptgRLE1Wow1PaBrha_!!2214330692836-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop372407289.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "2w+"
+        }
+      ],
+      "itemIds": [
+        "1031713944003"
+      ],
+      "cells": [
+        {
+          "itemId": "1031713944003",
+          "skuId": "6043799381539",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "电子导览",
+          "price": "¥7起",
+          "priceDecimal": null,
+          "sold": "已售36",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2215475082507": {
+      "sellerId": "2215475082507",
+      "sellerName": "嗨漾旅游旗舰店",
+      "sellerIcon": null,
+      "shopJumpUrl": "https://shop314588992.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "3.9w+"
+        }
+      ],
+      "itemIds": [
+        "929113299679"
+      ],
+      "cells": [
+        {
+          "itemId": "929113299679",
+          "skuId": "5813411572549",
+          "poiId": "1552",
+          "poiName": "北京动物园",
+          "name": "电子导览",
+          "price": "¥1起",
+          "priceDecimal": "5",
+          "sold": "已售100+",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2215491757739": {
+      "sellerId": "2215491757739",
+      "sellerName": "南宁哪都通旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i4/2215491757739/O1CN01Vs9NDQ272VxxeP5md_!!2215491757739-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop354158158.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "24w+"
+        }
+      ],
+      "itemIds": [
+        "771165079110",
+        "771160303683",
+        "776126945712"
+      ],
+      "cells": [
+        {
+          "itemId": "771165079110",
+          "skuId": "5452191778939",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "圆明园(电子导览)+清华大学(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售4",
+          "cellType": "园内项目"
+        },
+        {
+          "itemId": "771160303683",
+          "skuId": "5281832228904",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "颐和园(电子导览)+天坛公园(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售65",
+          "cellType": "景区联票"
+        },
+        {
+          "itemId": "776126945712",
+          "skuId": "5308936073546",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "八达岭长城(手机电子导览)+颐和园(电子导览)",
+          "price": "¥7起",
+          "priceDecimal": null,
+          "sold": "已售6",
+          "cellType": "景区联票"
+        },
+        {
+          "itemId": "771160303683",
+          "skuId": "5281832228904",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "颐和园(电子导览)+天坛公园(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售65",
+          "cellType": "景区联票"
+        }
+      ],
+      "isSelf": false
+    },
+    "2215602156137": {
+      "sellerId": "2215602156137",
+      "sellerName": "宫足迹旅行社旗舰店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i3/2215602156137/O1CN01BdEbpD1vCnTPXBXtw_!!2215602156137-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop409282745.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "17w+"
+        }
+      ],
+      "itemIds": [
+        "1065739764221",
+        "1063764674916",
+        "707634209680",
+        "921929705709",
+        "994832029673",
+        "835293256879",
+        "1070004539527"
+      ],
+      "cells": [
+        {
+          "itemId": "1065739764221",
+          "skuId": "6276363111198",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "大门票+西洋楼遗址+沙盘全景模型展+电子语音讲解",
+          "price": "¥31起",
+          "priceDecimal": "36",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1063764674916",
+          "skuId": "6126605864742",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "大门票+电子导览",
+          "price": "¥18起",
+          "priceDecimal": "63",
+          "sold": "已售400+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "707634209680",
+          "skuId": "4969103244615",
+          "poiId": "1552",
+          "poiName": "北京动物园",
+          "name": "北京动物园＋熊猫馆+电子导览",
+          "price": "¥21起",
+          "priceDecimal": "66",
+          "sold": "已售4000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "921929705709",
+          "skuId": "6174543350997",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "大门票+电子导览",
+          "price": "¥24起",
+          "priceDecimal": "3",
+          "sold": "已售4000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "994832029673",
+          "skuId": "5976452104959",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "成人票",
+          "price": "¥16起",
+          "priceDecimal": "51",
+          "sold": "已售3000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "994832029673",
+          "skuId": "5976452104963",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "儿童票",
+          "price": "¥8起",
+          "priceDecimal": "06",
+          "sold": "已售500+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "994832029673",
+          "skuId": "6120965321453",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "学生票",
+          "price": "¥8起",
+          "priceDecimal": "06",
+          "sold": "已售100+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "835293256879",
+          "skuId": "5589261421676",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "全天票",
+          "price": "¥15起",
+          "priceDecimal": "58",
+          "sold": "已售7000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1070004539527",
+          "skuId": "6285794910796",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "联票+电子语音导览",
+          "price": "¥37起",
+          "priceDecimal": "61",
+          "sold": "已售200+",
+          "cellType": "门票套餐"
+        }
+      ],
+      "isSelf": false
+    },
+    "2215849058770": {
+      "sellerId": "2215849058770",
+      "sellerName": "北京玄宝旅游专营店",
+      "sellerIcon": null,
+      "shopJumpUrl": "https://shop266951572.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "10w+"
+        }
+      ],
+      "itemIds": [
+        "854928783476"
+      ],
+      "cells": [
+        {
+          "itemId": "854928783476",
+          "skuId": "5660138770000",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "门票+景点联票",
+          "price": "¥34起",
+          "priceDecimal": "75",
+          "sold": "已售1.3万+",
+          "cellType": "门票套餐"
+        }
+      ],
+      "isSelf": false
+    },
+    "2216517143254": {
+      "sellerId": "2216517143254",
+      "sellerName": "成都链上旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i4/2216517143254/O1CN01P3u6WM1ZuNfqXd1tB_!!2216517143254-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop289210118.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "12w+"
+        }
+      ],
+      "itemIds": [
+        "775607420214",
+        "739594984767",
+        "775669671254"
+      ],
+      "cells": [
+        {
+          "itemId": "775607420214",
+          "skuId": "5303023744362",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "圆明园(电子导览)+颐和园(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售100+",
+          "cellType": "园内项目"
+        },
+        {
+          "itemId": "775607420214",
+          "skuId": "5303023744362",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "圆明园(电子导览)+颐和园(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售100+",
+          "cellType": "景区联票"
+        },
+        {
+          "itemId": "739594984767",
+          "skuId": "5276824159286",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "电子导览",
+          "price": "¥1起",
+          "priceDecimal": "5",
+          "sold": "已售71",
+          "cellType": "园内项目"
+        },
+        {
+          "itemId": "775669671254",
+          "skuId": "5306676801937",
+          "poiId": "1350",
+          "poiName": "天坛公园",
+          "name": "天坛公园(电子导览)+中国国家博物馆(电子导览)",
+          "price": "¥10起",
+          "priceDecimal": null,
+          "sold": "已售600+",
+          "cellType": "景区联票"
+        }
+      ],
+      "isSelf": false
+    },
+    "2216737962204": {
+      "sellerId": "2216737962204",
+      "sellerName": "南宁易飞旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i3/2216737962204/O1CN01xMXViN1S9ToTloPgz_!!2216737962204-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop575654105.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "4.1w+"
+        }
+      ],
+      "itemIds": [
+        "802915904415"
+      ],
+      "cells": [
+        {
+          "itemId": "802915904415",
+          "skuId": "5468257745859",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "电子导览",
+          "price": "¥7起",
+          "priceDecimal": null,
+          "sold": "已售100+",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2217592322543": {
+      "sellerId": "2217592322543",
+      "sellerName": "北京旭冉假期旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i3/2217592322543/O1CN01LhW0Wf1UekA1oqWd2_!!2217592322543.png",
+      "shopJumpUrl": "https://shop491410910.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "8000+"
+        }
+      ],
+      "itemIds": [
+        "935559260294",
+        "1075061329400",
+        "1061859543810",
+        "1071683262852",
+        "1065333482896",
+        "1000396499859",
+        "1067273935842",
+        "1072238600850",
+        "1067318808794",
+        "1007714683538",
+        "1062987215815"
+      ],
+      "cells": [
+        {
+          "itemId": "935559260294",
+          "skuId": "5824243684108",
+          "poiId": "1552",
+          "poiName": "北京动物园",
+          "name": "北京动物园+电子导览",
+          "price": "¥17起",
+          "priceDecimal": "9",
+          "sold": "已售100+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1075061329400",
+          "skuId": "6125781693905",
+          "poiId": "12726",
+          "poiName": "藏文化博物院",
+          "name": "成人票",
+          "price": "¥59起",
+          "priceDecimal": "9",
+          "sold": "已售800+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1075061329400",
+          "skuId": "6125781693906",
+          "poiId": "12726",
+          "poiName": "藏文化博物院",
+          "name": "儿童票",
+          "price": "¥31起",
+          "priceDecimal": "9",
+          "sold": "已售100+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1075061329400",
+          "skuId": "6125781693904",
+          "poiId": "12726",
+          "poiName": "藏文化博物院",
+          "name": "学生票",
+          "price": "¥29起",
+          "priceDecimal": null,
+          "sold": "已售33",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1061859543810",
+          "skuId": "6286226755069",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "门票+智旅手册",
+          "price": "¥29起",
+          "priceDecimal": "8",
+          "sold": "已售0",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1071683262852",
+          "skuId": "6286707218072",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "儿童票",
+          "price": "¥16起",
+          "priceDecimal": "69",
+          "sold": "已售4000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1071683262852",
+          "skuId": "6286707218073",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "学生票",
+          "price": "¥16起",
+          "priceDecimal": "69",
+          "sold": "已售700+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1065333482896",
+          "skuId": "6114386721255",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "大门票+电子导览",
+          "price": "¥11起",
+          "priceDecimal": "9",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1000396499859",
+          "skuId": "6155210411304",
+          "poiId": "1341",
+          "poiName": "景山公园",
+          "name": "门票+电子语音讲解",
+          "price": "¥19起",
+          "priceDecimal": "9",
+          "sold": "已售56",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1067273935842",
+          "skuId": "6123373161881",
+          "poiId": "1338",
+          "poiName": "北海公园",
+          "name": "大门票+电子导览",
+          "price": "¥12起",
+          "priceDecimal": "9",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1072238600850",
+          "skuId": "6285339543707",
+          "poiId": "1338",
+          "poiName": "北海公园",
+          "name": "联票（含门票+琼岛景区胜迹文物展览+团城）+电子导览 ",
+          "price": "¥27起",
+          "priceDecimal": "9",
+          "sold": "已售200+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1067318808794",
+          "skuId": "6278773383090",
+          "poiId": "1338",
+          "poiName": "北海公园",
+          "name": "门票+电子语音讲解",
+          "price": "¥15起",
+          "priceDecimal": "9",
+          "sold": "已售100+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1007714683538",
+          "skuId": "6173434267960",
+          "poiId": "1338",
+          "poiName": "北海公园",
+          "name": "门票+手机语音讲解",
+          "price": "¥18起",
+          "priceDecimal": "9",
+          "sold": "已售49",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1062987215815",
+          "skuId": "6276323431995",
+          "poiId": "1338",
+          "poiName": "北海公园",
+          "name": "门票+智旅手册",
+          "price": "¥29起",
+          "priceDecimal": "9",
+          "sold": "已售0",
+          "cellType": "门票套餐"
+        }
+      ],
+      "isSelf": true
+    },
+    "2217682367335": {
+      "sellerId": "2217682367335",
+      "sellerName": "北京星启航旅行社专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i3/2217682367335/O1CN01KfFtc6243U5EmJtQF_!!2217682367335.png",
+      "shopJumpUrl": "https://shop198051020.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "3.1w+"
+        }
+      ],
+      "itemIds": [
+        "894863806686"
+      ],
+      "cells": [
+        {
+          "itemId": "894863806686",
+          "skuId": "5744799924708",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "电子语音讲解",
+          "price": "¥7起",
+          "priceDecimal": null,
+          "sold": "已售100+",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2218193682124": {
+      "sellerId": "2218193682124",
+      "sellerName": "八哥说旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i2/6000000008087/O1CN015CSkLX29bu0mDO7k4_!!6000000008087-0-shopmanager.jpg",
+      "shopJumpUrl": "https://shop241466070.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "3.8w+"
+        }
+      ],
+      "itemIds": [
+        "1057931045957",
+        "1007488328149"
+      ],
+      "cells": [
+        {
+          "itemId": "1057931045957",
+          "skuId": "6264566946341",
+          "poiId": "1552",
+          "poiName": "北京动物园",
+          "name": "北京动物园＋熊猫馆",
+          "price": "¥25起",
+          "priceDecimal": null,
+          "sold": "已售94",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1007488328149",
+          "skuId": "6001313264003",
+          "poiId": "1331",
+          "poiName": "雍和宫",
+          "name": "电子导览",
+          "price": "¥1起",
+          "priceDecimal": "5",
+          "sold": "已售100+",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2218814252053": {
+      "sellerId": "2218814252053",
+      "sellerName": "票圈小叮当旅游专营店",
+      "sellerIcon": null,
+      "shopJumpUrl": "https://shop262174221.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "68w+"
+        }
+      ],
+      "itemIds": [
+        "904494683365",
+        "897076019921"
+      ],
+      "cells": [
+        {
+          "itemId": "904494683365",
+          "skuId": "6038795346774",
+          "poiId": "1552",
+          "poiName": "北京动物园",
+          "name": "北京动物园+北京海洋馆",
+          "price": "¥174起",
+          "priceDecimal": null,
+          "sold": "已售100+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "897076019921",
+          "skuId": "6243923335703",
+          "poiId": "140626495",
+          "poiName": "北京海洋馆",
+          "name": "北京海洋馆.夜场票",
+          "price": "¥156起",
+          "priceDecimal": null,
+          "sold": "已售79",
+          "cellType": "周边景区门票"
+        }
+      ],
+      "isSelf": false
+    },
+    "2221062844464": {
+      "sellerId": "2221062844464",
+      "sellerName": "成竹旅游旗舰店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded/https://img.alicdn.com/imgextra/i3/2221062844464/O1CN014Sc2Hx1iqZ8W0AK7M_!!2221062844464.png",
+      "shopJumpUrl": "https://shop269448664.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "1w+"
+        }
+      ],
+      "itemIds": [
+        "1006567268072"
+      ],
+      "cells": [
+        {
+          "itemId": "1006567268072",
+          "skuId": "6164839046882",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "电子导览",
+          "price": "¥7起",
+          "priceDecimal": null,
+          "sold": "已售65",
+          "cellType": "园内项目"
+        }
+      ],
+      "isSelf": false
+    },
+    "2758902895": {
+      "sellerId": "2758902895",
+      "sellerName": "敦煌西部新干线旅游专营店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded//i2/2758902895/O1CN01qzCUX41XFx97L5dz7_!!2758902895.png",
+      "shopJumpUrl": "https://shop144737714.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "38w+"
+        }
+      ],
+      "itemIds": [
+        "1076138560571"
+      ],
+      "cells": [
+        {
+          "itemId": "1076138560571",
+          "skuId": "6125179552274",
+          "poiId": "140626495",
+          "poiName": "北京海洋馆",
+          "name": "北京海洋馆.北京海洋馆+北京野生动物园+鱼食",
+          "price": "¥197起",
+          "priceDecimal": "5",
+          "sold": "已售0",
+          "cellType": "周边景区套票"
+        }
+      ],
+      "isSelf": false
+    },
+    "2856437246": {
+      "sellerId": "2856437246",
+      "sellerName": "飞猪景区乐园旗舰店",
+      "sellerIcon": "https://img.alicdn.com/bao/uploaded//i2/2856437246/O1CN01dBwGHB23OiiIDq1Tw_!!2856437246.png",
+      "shopJumpUrl": "https://shop152349105.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "4294w+"
+        }
+      ],
+      "itemIds": [
+        "934544714988",
+        "807617396459",
+        "1059901945646",
+        "1046509519794",
+        "1042308213835"
+      ],
+      "cells": [
+        {
+          "itemId": "934544714988",
+          "skuId": "5992733198878",
+          "poiId": "1345",
+          "poiName": "圆明园",
+          "name": "时光巴士票",
+          "price": "¥98起",
+          "priceDecimal": null,
+          "sold": "已售22",
+          "cellType": "园内项目"
+        },
+        {
+          "itemId": "807617396459",
+          "skuId": "6166974230056",
+          "poiId": "140626495",
+          "poiName": "北京海洋馆",
+          "name": "北京海洋馆.大门票",
+          "price": "¥176起",
+          "priceDecimal": null,
+          "sold": "已售200+",
+          "cellType": "周边景区门票"
+        },
+        {
+          "itemId": "1059901945646",
+          "skuId": "6103191916383",
+          "poiId": "12726",
+          "poiName": "藏文化博物院",
+          "name": "门票+《中国藏族文化艺术彩绘大观》下部特展套票",
+          "price": "¥28起",
+          "priceDecimal": "66",
+          "sold": "已售45",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "1046509519794",
+          "skuId": "6240275611728",
+          "poiId": "12726",
+          "poiName": "藏文化博物院",
+          "name": "南馆门票",
+          "price": "¥60起",
+          "priceDecimal": null,
+          "sold": "已售1000+",
+          "cellType": "园内项目"
+        },
+        {
+          "itemId": "1042308213835",
+          "skuId": "6062197316155",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "成人票",
+          "price": "¥39起",
+          "priceDecimal": null,
+          "sold": "已售1.9万+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1042308213835",
+          "skuId": "6227829459366",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "老人票",
+          "price": "¥19起",
+          "priceDecimal": null,
+          "sold": "已售3000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1042308213835",
+          "skuId": "6227369874770",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "学生票",
+          "price": "¥19起",
+          "priceDecimal": null,
+          "sold": "已售1000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "1042308213835",
+          "skuId": "6062196756947",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "军人票",
+          "price": "¥19起",
+          "priceDecimal": null,
+          "sold": "已售25",
+          "cellType": "景点门票"
+        }
+      ],
+      "isSelf": false
+    },
+    "4134013497": {
+      "sellerId": "4134013497",
+      "sellerName": "北京遇上假期国旅专营",
+      "sellerIcon": null,
+      "shopJumpUrl": "https://shop170154736.m.taobao.com",
+      "serviceStats": [
+        {
+          "propName": "服务人数",
+          "propValue": "21w+"
+        }
+      ],
+      "itemIds": [
+        "792628127282",
+        "838591814958",
+        "882234162697",
+        "765859307422",
+        "948910654099"
+      ],
+      "cells": [
+        {
+          "itemId": "792628127282",
+          "skuId": "5410881708583",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "大门票+佛香阁+苏州街+德和园+文昌院",
+          "price": "¥65起",
+          "priceDecimal": "9",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "838591814958",
+          "skuId": "5767795910527",
+          "poiId": "1355",
+          "poiName": "颐和园",
+          "name": "大门票+德和园+佛香阁+苏州街+颐和园博物馆+电子语音讲解",
+          "price": "¥65起",
+          "priceDecimal": "8",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "882234162697",
+          "skuId": "5889024422976",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "儿童票",
+          "price": "¥20起",
+          "priceDecimal": null,
+          "sold": "已售3000+",
+          "cellType": "景点门票"
+        },
+        {
+          "itemId": "765859307422",
+          "skuId": "5264164176159",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "大门票+电子语音讲解",
+          "price": "¥41起",
+          "priceDecimal": "98",
+          "sold": "已售1000+",
+          "cellType": "门票套餐"
+        },
+        {
+          "itemId": "948910654099",
+          "skuId": "5862356709364",
+          "poiId": "1544",
+          "poiName": "恭王府",
+          "name": "大门票+银安殿+多福轩+福字碑+锡晋斋",
+          "price": "¥41起",
+          "priceDecimal": "98",
+          "sold": "已售200+",
+          "cellType": "门票套餐"
+        }
+      ],
+      "isSelf": false
+    }
+  }
+}

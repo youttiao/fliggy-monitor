@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ status_code }}{% endblock %}
+
+{% block content %}
+<div class="empty" style="padding-top:var(--s-7);">
+    <h1 class="mono" style="font-size:64px;color:var(--text-3);margin:0;">{{ status_code }}</h1>
+    <h3>{{ detail }}</h3>
+    <p><a href="/" class="btn">← 回到 Dashboard</a></p>
+</div>
+{% endblock %}

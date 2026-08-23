@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.db-wal
+*.db-shm
+*.log
+cookies.json
+deploy_keys/
+.env
+backups/
+.venv/
+venv/
+screenshots/
+.claude/launch.json

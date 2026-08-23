@@ -1,0 +1,21 @@
+{
+  "_comment": "监控核心基线：用户自营 sellerId + 非自营告警规则",
+  "version": "2026-08-23",
+  "self_seller_id": "2217592322543",
+  "self_seller_name": "北京旭冉假期旅游专营店",
+  "monitor_purpose": "找出哪些 POI 门票 SKU 不是自营在卖（即外部商家/旅行社在卖的票），用于业务告警",
+  "alert_rules": {
+    "trigger_when": "shelf.cell.sellerId != self_seller_id",
+    "default_export": "non_self_cells only",
+    "self_cells_are": "在统计面板里展示，但不告警"
+  },
+  "stability_notes": [
+    "sellerId 是淘宝商家账号唯一 ID，除非账号注销/迁移，否则不变",
+    "用户原话：'这个基本不会怎么大变'",
+    "监控脚本启动时校验一次 seller_cache 的完整性即可，不需要每轮重 hit booktips"
+  ],
+  "regenerate_booktips_when": [
+    "新 sellerId 出现（shelf 里出现缓存外的 sellerId）",
+    "现有 seller 的 sellerName/icon/shopJumpUrl 变成空（mtop 字段调整）"
+  ]
+}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}告警{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>告警流</h1>
+        <p class="sub">{{ alerts | length }} 条 · 按时间倒序</p>
+    </div>
+    <div class="spacer"></div>
+</div>
+
+<form method="get" action="/alerts" class="filter-bar" style="background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r-2);margin-bottom:var(--s-4);">
+    <label>类型：</label>
+    <a href="/alerts{% if severity %}?severity={{ severity }}{% endif %}" class="{% if not type %}active{% endif %}">全部</a>
+    {% for t in ['non_self_new','price_alert','self_missing','first_seller','shelf_error','cookie_refresh_failed'] %}
+    <a href="/alerts?type={{ t }}{% if severity %}&severity={{ severity }}{% endif %}" class="{% if type == t %}active{% endif %}">{{ t }}</a>
+    {% endfor %}
+    <label style="margin-left:var(--s-4);">等级：</label>
+    <a href="/alerts{% if type %}?type={{ type }}{% endif %}" class="{% if not severity %}active{% endif %}">全部</a>
+    <a href="/alerts?severity=critical{% if type %}&type={{ type }}{% endif %}" class="{% if severity == 'critical' %}active{% endif %}">critical</a>
+    <a href="/alerts?severity=warning{% if type %}&type={{ type }}{% endif %}" class="{% if severity == 'warning' %}active{% endif %}">warning</a>
+    <a href="/alerts?severity=info{% if type %}&type={{ type }}{% endif %}" class="{% if severity == 'info' %}active{% endif %}">info</a>
+</form>
+
+<div class="card">
+    <div class="card-body card-body--p0">
+        {% if alerts %}
+        <div class="alert-list">
+            {% for a in alerts %}
+            {% set type_label = {
+                'non_self_new': '新非自营',
+                'price_alert': '价格异动',
+                'self_missing': '自营缺位',
+                'first_seller': '首次卖家',
+                'shelf_error': '采集失败',
+                'cookie_refresh_failed': 'Cookie 续期失败'
+            }.get(a.type, a.type) %}
+            <div class="alert-item sev-{{ a.severity }}">
+                <div class="bar"></div>
+                <span class="ts">{{ a.ts }}</span>
+                <span class="type">{{ type_label }}</span>
+                <div class="body">
+                    {% if a.poi_name %}<strong>{{ a.poi_name }}</strong>{% else %}<span style="color:var(--text-3)">未知 POI</span>{% endif %}
+                    {% if a.seller_id %} ·
+                    {% set _ = namespace(name=a.seller_id) %}
+                    <a href="/sellers/{{ a.seller_id }}" style="font-family:var(--font-mono);font-size:12px;">{{ a.seller_id[:8] }}…</a>
+                    {% endif %}
+                    <div class="meta">
+                        round={{ a.round_id or '?' }} ·
+                        dedup={{ a.dedup_key[:10] if a.dedup_key else '?' }}…
+                        {% if a.payload %}
+                        · payload=<span class="mono" style="color:var(--text-3);">{{ (a.payload | string)[:60] }}{% if (a.payload | string) | length > 60 %}…{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="status status--{{ a.webhook_status or 'pending' }}">
+                    {{ a.webhook_status or 'pending' }}{% if a.webhook_retry %} · ↻{{ a.webhook_retry }}{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <h3>暂无告警</h3>
+            <p>监控跑起来后，新出现的非自营 SKU / 自营缺位 / 价格异动都会出现在这里。</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+<nav class="nav">
+    <a href="/" class="nav-brand">
+        <span class="dot"></span>
+        飞猪哨兵 <span class="accent">·</span> Sentinel
+    </a>
+    <div class="nav-links">
+        <a href="/" class="nav-link {% if current_path == '/' %}active{% endif %}">Dashboard</a>
+        <a href="/sellers" class="nav-link {% if current_path.startswith('/sellers') %}active{% endif %}">卖家</a>
+        <a href="/alerts" class="nav-link {% if current_path.startswith('/alerts') %}active{% endif %}">告警</a>
+        <a href="/settings" class="nav-link {% if current_path.startswith('/settings') %}active{% endif %}">设置</a>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-meta">
+        <span class="pill" title="监控轮询间隔">
+            <span style="color:var(--text-2)">每</span>
+            <span>{{ (site.polling_sec if site and site.polling_sec else 1800) // 60 }}</span>
+            <span style="color:var(--text-2)">min</span>
+        </span>
+        <form method="post" action="/logout">
+            <button type="submit">登出</button>
+        </form>
+    </div>
+</nav>
