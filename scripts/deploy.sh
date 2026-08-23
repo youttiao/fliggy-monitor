@@ -51,6 +51,12 @@ ssh "${SSH_OPTS[@]}" "${VPS_USER}@${VPS_HOST}" << 'REMOTE'
   sudo -u monitor .venv/bin/pip install --upgrade pip -q
   sudo -u monitor .venv/bin/pip install -r requirements.txt -q
 
+  # 构建 Chrome 扩展 zip（web 路由会读取 dist/fliggy-cookie-sync.zip）
+  bash extensions/fliggy-cookie-sync/build.sh
+
+  # 幂等迁移：新加的表/索引都靠 IF NOT EXISTS 兜底
+  sudo -u monitor /opt/fliggy-monitor/.venv/bin/python3 /opt/fliggy-monitor/scripts/init_db.py --no-baseline || true
+
   if [ -f /etc/fliggy-monitor/cookies.json ]; then
     echo "cookies.json preserved at /etc/fliggy-monitor/cookies.json"
   else

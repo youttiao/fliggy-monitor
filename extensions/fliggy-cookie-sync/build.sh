@@ -5,6 +5,7 @@
 #   ./build.sh           # → dist/fliggy-cookie-sync.zip
 #   VERSION=1.0.1 ./build.sh   # 自定义版本号
 #
+# 用 Python zipfile 而不是系统 zip 命令，避免部署 VPS 时多装一个包。
 # 输出会附带 build-info.txt（打包时间 + commit），方便运维核对。
 
 set -euo pipefail
@@ -37,9 +38,19 @@ built_at: ${STAMP}
 commit: ${COMMIT}
 EOF
 
-( cd "$TMP" && zip -r "$OLDPWD/$OUT" . --quiet )
+python3 - "$TMP" "$OUT" <<'PYEOF'
+import sys, os, zipfile
+src, out = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+    for root, _, files in os.walk(src):
+        for f in sorted(files):
+            full = os.path.join(root, f)
+            arc = os.path.relpath(full, src)
+            z.write(full, arc)
+PYEOF
+
 echo "✓ built $OUT"
 
-# 同时写一个 latest 软链，方便 CI / 文档固定引用
+# 同时写一个 latest 软链，方便 web 路由固定读取
 ln -sf "$(basename "$OUT")" "$DIST/fliggy-cookie-sync.zip"
 echo "✓ symlink $DIST/fliggy-cookie-sync.zip → $(basename "$OUT")"

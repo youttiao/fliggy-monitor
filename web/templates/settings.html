@@ -103,4 +103,44 @@
     </div>
 </div>
 {% endif %}
+
+<div class="card">
+    <div class="card-head">
+        <h2>Cookie 同步扩展</h2>
+        <span class="tag">Chrome · MV3</span>
+        <div class="spacer"></div>
+        <a href="/api/extensions/fliggy-cookie-sync/info" target="_blank" class="btn btn--ghost"
+           style="font-size:12px;padding:4px 10px;">查看元数据</a>
+        <a href="/api/extensions/fliggy-cookie-sync/zip" class="btn"
+           style="font-size:12px;padding:4px 12px;">⬇ 下载扩展 zip</a>
+    </div>
+    <div class="card-body">
+        <p style="margin:0 0 var(--s-3);color:var(--text-1);font-size:13px;">
+            给运营同事用：飞猪 mtop cookies 失效时，从飞猪 H5 页面抓 cookies 一键上传到 VPS。
+        </p>
+        <div class="mono" style="font-size:12px;color:var(--text-2);">
+            当前版本 <span id="ext-version" style="color:var(--cyan)">…</span>
+            · zip <span id="ext-zip-info" style="color:var(--text-1)">…</span>
+        </div>
+        <p style="margin:var(--s-3) 0 0;color:var(--text-3);font-size:12px;">
+            下载后解压 → Chrome <code>chrome://extensions/</code> → 开发者模式 → 加载已解压的扩展程序。
+            详细步骤见压缩包内 README.md。
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async () => {
+    try {
+        const r = await fetch('/api/extensions/fliggy-cookie-sync/info');
+        if (!r.ok) return;
+        const j = await r.json();
+        document.getElementById('ext-version').textContent = j.version || '?';
+        const sizeKb = j.zip_bytes ? (j.zip_bytes / 1024).toFixed(1) + ' KB' : '—';
+        document.getElementById('ext-zip-info').textContent = `${j.zip_name || '—'} · ${sizeKb}`;
+    } catch (e) { /* swallow */ }
+})();
+</script>
 {% endblock %}
