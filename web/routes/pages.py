@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 
 from .. import auth as authmod
 from .. import db as dbmod
+from ..templates_factory import make_templates
 
 router = APIRouter()
-_TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "templates"
-templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
+templates = make_templates()
 
 
 def _conn(request: Request):

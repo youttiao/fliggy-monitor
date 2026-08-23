@@ -111,7 +111,7 @@
                 <td>
                     <a href="/poi/{{ r.poi_id }}/sku/{{ r.item_id }}/{{ r.sku_id }}">{{ r.sku_name or '—' }}</a>
                 </td>
-                <td class="num">{{ r.price_int or '?' }}{{ r.price_dec or '' }}{{ r.price_suffix or '' }}</td>
+                <td class="num">{{ r.price_int | price(r.price_dec) }}</td>
                 <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.round_started_at or '' }}</td>
                 <td class="mono" style="font-size:11px;color:var(--text-2);">{{ r.first_seen_at or '' }}</td>
             </tr>

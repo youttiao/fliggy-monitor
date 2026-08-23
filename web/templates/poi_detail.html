@@ -76,9 +76,7 @@
                 {% endif %}
                 <a href="/poi/{{ poi.poi_id }}/sku/{{ c.item_id }}/{{ c.sku_id }}" style="color:var(--text-0)">{{ c.sku_name or '—' }}</a>
             </td>
-            <td class="price">
-                {{ c.price_int or '?' }}{{ c.price_dec or '' }}{{ c.price_suffix or '' }}
-            </td>
+            <td class="price">{{ c.price_int | price(c.price_dec) }}</td>
             <td class="mono" style="color:var(--text-2)">{{ c.sold or '—' }}</td>
             <td>
                 <a href="/sellers/{{ c.seller_id }}" style="font-size:13px;">{{ display }}</a>

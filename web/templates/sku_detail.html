@@ -15,7 +15,7 @@
     <div class="spacer"></div>
     <div style="text-align:right;">
         <div class="price mono" style="font-size:28px;color:var(--text-0);font-weight:500;">
-            {{ cell.price_int or '?' }}{{ cell.price_dec or '' }}{{ cell.price_suffix or '' }}
+            {{ cell.price_int | price(cell.price_dec) }}
         </div>
         <div class="mono" style="color:var(--text-2);font-size:11px;">本轮价格</div>
     </div>
@@ -80,7 +80,7 @@
             {% for h in history %}
             <tr>
                 <td class="mono" style="font-size:11px;color:var(--text-2)">{{ h.started_at }}</td>
-                <td class="num">{{ h.price_int or '?' }}{{ h.price_dec or '' }}{{ h.price_suffix or '' }}</td>
+                <td class="num">{{ h.price_int | price(h.price_dec) }}</td>
                 <td>
                     {% set hd = h.seller_name or (h.seller_id[:6] + '…') %}
                     <a href="/sellers/{{ h.seller_id }}">{{ hd }}</a>

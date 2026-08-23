@@ -14,11 +14,11 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from . import auth as authmod
 from . import db as dbmod
-from .routes import api_router, cookie_sync_router, pages_router, sellers_router
+from .routes import api_router, cookie_sync_router, extensions_router, pages_router, sellers_router
+from .templates_factory import make_templates
 
 ROOT = Path(__file__).resolve().parent
 TEMPLATES_DIR = ROOT / "templates"
@@ -59,13 +59,12 @@ app = FastAPI(
     openapi_url=None,
 )
 
+
 # 静态文件
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# 模板
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-templates.env.globals["app_name"] = "飞猪哨兵"
-templates.env.globals["self_seller_id"] = "2217592322543"
+# 模板（单一实例：所有路由模块共享过滤器 / globals）
+templates = make_templates()
 
 
 @app.middleware("http")
@@ -120,8 +119,4 @@ app.include_router(pages_router)
 app.include_router(api_router)
 app.include_router(sellers_router)
 app.include_router(cookie_sync_router)
-
-
-# 让 templates 模块内的代码能 import 这个实例
-def get_templates() -> Jinja2Templates:
-    return templates
+app.include_router(extensions_router)
