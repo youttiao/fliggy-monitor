@@ -126,7 +126,12 @@ class MtopClient:
 def parse_ticket_cells(shelf_raw: dict) -> list[dict]:
     """从 shelf raw 抽所有「门票」cell + sellerId + 价格/库存。
 
-    Returns: [{itemId, skuId, poiId, poiName, name, price, priceDecimal, sold, cellType, sellerId}, ...]
+    Returns: [{itemId, skuId, poiId, poiName, name, price, integerPrice, priceDecimal,
+               priceSuffix, sold, cellType, sellerId}, ...]
+
+    price 是给日志/人看的拼接串，**不要**当作精确价格的来源 —— 它由上游 API
+    决定是否包含小数（部分接口只回 integerPrice + priceSuffix）。下游做价格
+    拆分必须用 integerPrice / priceDecimal / priceSuffix 三个独立字段。
     """
     try:
         shelves = shelf_raw["data"]["result"]["data"]["shelf"]["shelves"]
@@ -144,16 +149,18 @@ def parse_ticket_cells(shelf_raw: dict) -> list[dict]:
                 continue  # 免费票 / 无 tips，跳过
             ps = cell.get("priceStruct", {}) or {}
             out.append({
-                "itemId":      str(cell.get("itemId", "")),
-                "skuId":       str(cell.get("skuId", "")),
-                "poiId":       str(cell.get("poiId", "")),
-                "poiName":     str(cell.get("poiName", "")),
-                "name":        str(cell.get("name", "")),
-                "price":       f"{ps.get('pricePrefix', '¥')}{ps.get('integerPrice', '')}{ps.get('priceSuffix', '')}",
-                "priceDecimal": ps.get("decimalPrice"),
-                "sold":        str(cell.get("soldStr", "")),
-                "cellType":    shelf.get("name", "ScenicTicketType"),
-                "sellerId":    str(cell.get("sellerId", "")),
+                "itemId":       str(cell.get("itemId", "")),
+                "skuId":        str(cell.get("skuId", "")),
+                "poiId":        str(cell.get("poiId", "")),
+                "poiName":      str(cell.get("poiName", "")),
+                "name":         str(cell.get("name", "")),
+                "price":        f"{ps.get('pricePrefix', '¥')}{ps.get('integerPrice', '')}{ps.get('priceSuffix', '')}",
+                "integerPrice": str(ps.get("integerPrice", "")),
+                "priceDecimal": str(ps.get("decimalPrice", "")),
+                "priceSuffix":  str(ps.get("priceSuffix", "")),
+                "sold":         str(cell.get("soldStr", "")),
+                "cellType":     shelf.get("name", "ScenicTicketType"),
+                "sellerId":     str(cell.get("sellerId", "")),
             })
     return out
 

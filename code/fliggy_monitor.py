@@ -106,23 +106,11 @@ def scan_poi(
             sid = c["sellerId"]
             is_self = 1 if sid == SELF_SELLER_ID else 0
 
-            # 拆分价格
-            full_price = c["price"]  # e.g. "¥58起"
-            price_int = ""
-            price_dec = ""
-            price_suffix = ""
-            for ch in full_price:
-                if ch.isdigit():
-                    price_int += ch
-                elif ch == "." or (ch.isdigit() is False and price_dec == "" and price_int):
-                    price_dec += ch
-            # 更稳：用正则
-            import re
-            m = re.search(r"(\d+)(?:\.(\d+))?(.*)$", full_price.replace("¥", ""))
-            if m:
-                price_int = m.group(1) or ""
-                price_dec = "." + m.group(2) if m.group(2) else ""
-                price_suffix = m.group(3) or ""
+            # 价格：直接从原始 priceStruct 字段取，不再 regex c["price"] —— 后者
+            # 是给日志看的拼接串（部分接口不回 decimalPrice），正则永远拿不到小数。
+            price_int = c.get("integerPrice", "") or ""
+            price_dec = c.get("priceDecimal", "") or ""
+            price_suffix = c.get("priceSuffix", "") or ""
 
             cur = execute(
                 conn,
