@@ -11,9 +11,10 @@
 
 const REQUIRED = ["_m_h5_tk", "_m_h5_tk_enc", "cookie2", "t"];
 
-// 飞猪 H5 商品详情页（标准货架接口所在的页面，能拿到登录态下的全部 mtop cookie）
-const H5_URL =
-  "https://market.m.taobao.com/app/trip/rx-trip-ticket/pages/detail/index.html?poiId=1345";
+// 飞猪 H5 入口页（用于让浏览器持有 .taobao.com / .fliggy.com 登录 cookie）。
+// 这里只需要一个能稳定访问的 H5 落地页，登录跳转后 URL 会变但前缀不变。
+// 之前的 detail 页 (rx-trip-ticket/pages/detail) 已 404，换成 rx-home 首页。
+const H5_URL = "https://market.m.taobao.com/app/trip/rx-home/pages/home";
 
 // H5 入口的 URL 前缀，用于识别「已经开着的飞猪窗口」（登录跳转后 URL 会变，但前缀不变）
 const H5_URL_PREFIX = "https://market.m.taobao.com/app/trip/";
