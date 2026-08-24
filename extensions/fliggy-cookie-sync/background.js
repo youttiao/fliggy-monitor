@@ -161,6 +161,18 @@ function waitForTabComplete(tabId, timeoutMs = 15000) {
   });
 }
 
+// 强制刷新 tab 等到 complete —— 复用旧窗口时页面可能是几小时前加载的，
+// 那时持有的 cookie 状态（特别是分区 cookie）可能已被浏览器清掉 / 过期。
+// 重新加载一次才能拿到「页面刚刚跑起来那一刻」的 document.cookie。
+async function reloadAndWaitForTab(tabId, timeoutMs = 15000) {
+  try {
+    await chrome.tabs.reload(tabId);
+  } catch (e) {
+    log_to_bg(`tabs.reload failed: ${e?.message || e}`);
+  }
+  return waitForTabComplete(tabId, timeoutMs);
+}
+
 async function postCookies(endpoint, secret, cookies) {
   const resp = await fetch(`${endpoint}/api/cookies/sync`, {
     method: "POST",
@@ -212,12 +224,16 @@ async function autoSync({ endpoint, secret }) {
         type: "normal",
       });
       openedHere = true;
-      const tabId = win.tabs?.[0]?.id;
-      if (!tabId) throw new Error("打开窗口后没拿到 tabId");
-
-      log("load", "等待页面加载…");
-      await waitForTabComplete(tabId);
     }
+
+    const tabId = win?.tabs?.[0]?.id;
+    if (!tabId) throw new Error("拿到窗口后没拿到 tabId");
+
+    // 不管是新开还是复用，都强制刷新一次页面 —— 复用窗口的页面可能是几小时前加载的，
+    // 那时持有的 cookie 状态（特别是分区 cookie）可能已经过时，刷一下让它和当前浏览器
+    // 里的 cookie 罐重新对齐。
+    log("reload", "刷新页面，让 cookie 状态对齐…");
+    await reloadAndWaitForTab(tabId);
 
     log("grace", `页面已就绪，等待 ${GRACE_MS / 1000}s 让 cookie 落地…`);
     await sleep(GRACE_MS);

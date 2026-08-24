@@ -21,9 +21,11 @@ const $ = (id) => document.getElementById(id);
 
 const PHASE_LABEL = {
   open: "📱 打开手机窗口",
-  load: "⏳ 加载页面",
+  reuse: "♻️ 复用已有窗口",
+  reload: "🔄 刷新页面",
   grace: "⏸️ 等待 cookie 落地",
   grab: "🍪 抓取 cookies",
+  "grab-doc": "🍪 补抓分区 cookie",
   upload: "📤 上传到 VPS",
 };
 
