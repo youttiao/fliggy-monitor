@@ -1,5 +1,66 @@
 /* 飞猪哨兵 · 客户端微交互 */
 
+/* 0. 主题切换（auto / light / dark），偏好持久化到 localStorage */
+(function initThemeToggle() {
+    const STORAGE_KEY = 'fliggy.theme';
+
+    function systemPref() {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function activeTheme() {
+        // 返回用户当前感知到的"亮 / 暗"（auto 时跟随系统）
+        const pref = (() => { try { return localStorage.getItem(STORAGE_KEY) || 'auto'; } catch (e) { return 'auto'; } })();
+        return pref === 'auto' ? systemPref() : pref;
+    }
+
+    function applyTheme(pref) {
+        const root = document.documentElement;
+        if (pref === 'light' || pref === 'dark') {
+            root.setAttribute('data-theme', pref);
+        } else {
+            root.removeAttribute('data-theme');  // auto：交给 media query
+        }
+        try { localStorage.setItem(STORAGE_KEY, pref); } catch (e) { /* private mode */ }
+
+        // 同步按钮 active 状态（active = 用户偏好；不是感知到的亮暗）
+        document.querySelectorAll('.theme-opt').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.themeSet === pref);
+        });
+
+        // 切换瞬间给整页一个过渡
+        root.classList.add('theme-switching');
+        setTimeout(() => root.classList.remove('theme-switching'), 250);
+    }
+
+    // 初始同步按钮状态（FOUC 脚本已设好 data-theme）
+    function syncButtons() {
+        let pref = 'auto';
+        try { pref = localStorage.getItem(STORAGE_KEY) || 'auto'; } catch (e) { /* */ }
+        document.querySelectorAll('.theme-opt').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.themeSet === pref);
+        });
+    }
+
+    // 绑定点击
+    document.querySelectorAll('.theme-opt').forEach((btn) => {
+        btn.addEventListener('click', () => applyTheme(btn.dataset.themeSet));
+    });
+
+    // 系统偏好变化时，若用户选 auto 则实时跟随
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+        let pref = 'auto';
+        try { pref = localStorage.getItem(STORAGE_KEY) || 'auto'; } catch (e) { /* */ }
+        if (pref === 'auto') {
+            // 不改 data-theme，但让按钮视觉保持 auto active（系统切换发生在 CSS media query 层）
+            // 这里只重新 sync 一次，避免其他按钮被旧 active 卡住
+            syncButtons();
+        }
+    });
+
+    syncButtons();
+})();
+
 /* 1. 卖家行的关注 toggle（HTMX-style fetch；失败时回滚） */
 async function toggleWatch(sellerId, target) {
     const desired = !target.classList.contains('on');

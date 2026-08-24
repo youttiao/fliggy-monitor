@@ -3,10 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#0A0E14">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0A0E14" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F4F6FA" media="(prefers-color-scheme: light)">
     <meta name="robots" content="noindex,nofollow">
     <title>{{ site.site_name if site else '飞猪哨兵' }} · {{ self.title() or 'Dashboard' }}</title>
+    {# 防 FOUC：在 CSS 加载前根据 localStorage 先设好主题，避免闪一下深色再变浅 #}
+    <script>
+    (function () {
+        try {
+            var pref = localStorage.getItem('fliggy.theme');
+            if (pref === 'light' || pref === 'dark') {
+                document.documentElement.setAttribute('data-theme', pref);
+            }
+        } catch (e) { /* localStorage 不可用就跟随系统 */ }
+    })();
+    </script>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234FD0B8'/%3E%3C/svg%3E">
 </head>

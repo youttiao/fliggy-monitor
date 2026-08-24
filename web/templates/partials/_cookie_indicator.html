@@ -30,12 +30,12 @@
     }
     .cookie-indicator .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .cookie-ok         { color: var(--text-2); }
-    .cookie-ok .dot--ok     { background: var(--phosphor); box-shadow: 0 0 6px rgba(79,208,184,0.5); }
-    .cookie-stale      { color: var(--amber); border-color: var(--amber); }
-    .cookie-stale .dot--warn { background: var(--amber); box-shadow: 0 0 6px rgba(229,168,71,0.5); }
+    .cookie-ok .dot--ok     { background: var(--phosphor); box-shadow: 0 0 6px var(--phosphor-glow); }
+    .cookie-stale      { color: var(--amber); border-color: var(--amber-border); }
+    .cookie-stale .dot--warn { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow); }
     .cookie-expired,
-    .cookie-missing    { color: var(--red); border-color: var(--red); }
+    .cookie-missing    { color: var(--red); border-color: var(--red-border); }
     .cookie-expired .dot--bad,
-    .cookie-missing .dot--bad { background: var(--red); box-shadow: 0 0 6px rgba(255,107,107,0.5); }
+    .cookie-missing .dot--bad { background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
 </style>
 {% endif %}

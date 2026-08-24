@@ -1,15 +1,16 @@
 /* ============================================================
    飞猪哨兵 · Fliggy Sentinel — 主样式
    设计方向：Bloomberg terminal × Linear × 内部监控工具
-   - 暗色、单色基调配 3 个高饱和角色色
-   - 数据用等宽字体；UI 用 Inter
+   - 单色基调配 3 个高饱和角色色
+   - 数据用等宽字体；UI 用 IBM Plex Sans
    - 角色色仅做「侧色条 + 标签」信号，不大面积铺
+   - 暗色 / 浅色 共用同一套 token；切换按钮在 nav 右上
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-    /* 基调：近黑单色 */
+    /* ─── 主变量：深色（默认 / 系统偏好 dark）─── */
     --bg-0: #0A0E14;       /* 页面底 */
     --bg-1: #11161F;       /* 卡片底 */
     --bg-2: #161D29;       /* 卡片 hover / 内嵌底 */
@@ -23,12 +24,38 @@
     --text-2: #6E7B91;     /* 弱化 */
     --text-3: #4B556A;     /* 占位 */
 
-    /* 角色色（仅高饱和） */
-    --phosphor: #4FD0B8;   /* 自营 SELF */
-    --cyan:     #5EAEFF;   /* 关注 watched */
-    --amber:    #E5A847;   /* 24h 新事件 chip */
-    --red:      #FF6B6B;   /* critical */
-    --violet:   #A78BFA;   /* 标题 / logo accent */
+    /* 角色色（仅高饱和）+ RGB 三元组（让 alpha 也能跟着主题切） */
+    --phosphor:    #4FD0B8;  --phosphor-rgb: 79, 208, 184;
+    --cyan:        #5EAEFF;  --cyan-rgb:     94, 174, 255;
+    --amber:       #E5A847;  --amber-rgb:    229, 168, 71;
+    --red:         #FF6B6B;  --red-rgb:      255, 107, 107;
+    --violet:      #A78BFA;  --violet-rgb:   167, 139, 250;
+
+    /* 角色色衍生：soft（chip 底）/ border（chip 边）/ glow（光晕）/ shadow（focus 圈） */
+    --phosphor-soft:    rgba(var(--phosphor-rgb), 0.10);
+    --phosphor-border:  rgba(var(--phosphor-rgb), 0.25);
+    --phosphor-glow:    rgba(var(--phosphor-rgb), 0.60);
+    --cyan-soft:        rgba(var(--cyan-rgb),     0.10);
+    --cyan-border:      rgba(var(--cyan-rgb),     0.25);
+    --cyan-glow:        rgba(var(--cyan-rgb),     0.50);
+    --cyan-shadow:      rgba(var(--cyan-rgb),     0.15);
+    --amber-soft:       rgba(var(--amber-rgb),    0.12);
+    --amber-border:     rgba(var(--amber-rgb),    0.30);
+    --amber-glow:       rgba(var(--amber-rgb),    0.50);
+    --red-soft:         rgba(var(--red-rgb),      0.10);
+    --red-border:       rgba(var(--red-rgb),      0.30);
+    --red-glow:         rgba(var(--red-rgb),      0.50);
+
+    /* 主按钮：cyan 实色 + 深色文字 */
+    --btn-fg: #0A0E14;
+    --btn-hover-bg: #7EBBFF;
+
+    /* nav 半透明背景 */
+    --nav-bg: rgba(10, 14, 20, 0.85);
+
+    /* body 装饰光（径向渐变） */
+    --body-glow-1: rgba(94, 174, 255, 0.04);
+    --body-glow-2: rgba(167, 139, 250, 0.03);
 
     /* 阴影 */
     --shadow-1: 0 1px 0 rgba(255,255,255,0.02), 0 8px 24px rgba(0,0,0,0.35);
@@ -50,6 +77,91 @@
     --s-5: 24px;
     --s-6: 32px;
     --s-7: 48px;
+
+    /* 切换过渡时长 */
+    --t-theme: 200ms;
+}
+
+/* ─── 浅色主题：用户显式选 light ─── */
+[data-theme="light"] {
+    /* 冷灰蓝白基调（Linear / Datadog 监控工具血统，避开 AI 默认的暖米白） */
+    --bg-0: #F4F6FA;       /* 页面底 */
+    --bg-1: #FFFFFF;       /* 卡片底 */
+    --bg-2: #F1F4F9;       /* hover / 内嵌底 */
+    --bg-3: #E8EDF4;       /* 输入框 / 表格头 */
+    --line: #DDE3ED;
+    --line-soft: #E8EDF4;
+
+    --text-0: #0F172A;     /* 深蓝灰，比纯黑柔和 */
+    --text-1: #334155;
+    --text-2: #64748B;
+    --text-3: #94A3B8;
+
+    /* 角色色降饱和并加深（保证白底可读；衍生色自动跟着 RGB 三元组级联） */
+    --phosphor: #0E9F87;
+    --cyan:     #2563EB;
+    --amber:    #B45309;
+    --red:      #DC2626;
+    --violet:   #6D28D9;
+
+    --btn-fg: #FFFFFF;       /* 深蓝按钮上文字反白 */
+    --btn-hover-bg: #1D4ED8;
+
+    --nav-bg: rgba(255, 255, 255, 0.82);
+
+    --body-glow-1: rgba(37, 99, 235, 0.05);
+    --body-glow-2: rgba(109, 40, 217, 0.04);
+
+    /* 浅色下阴影要轻、要「下」不能「下+黑」 */
+    --shadow-1: 0 1px 0 rgba(15,23,42,0.02), 0 1px 3px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
+    --shadow-2: 0 1px 0 rgba(15,23,42,0.03), 0 12px 32px rgba(15,23,42,0.08), 0 24px 60px rgba(15,23,42,0.10);
+}
+
+/* ─── 系统偏好：用户没显式设（auto 模式），跟随 prefers-color-scheme ─── */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) {
+        --bg-0: #F4F6FA;
+        --bg-1: #FFFFFF;
+        --bg-2: #F1F4F9;
+        --bg-3: #E8EDF4;
+        --line: #DDE3ED;
+        --line-soft: #E8EDF4;
+
+        --text-0: #0F172A;
+        --text-1: #334155;
+        --text-2: #64748B;
+        --text-3: #94A3B8;
+
+        --phosphor: #0E9F87;
+        --cyan:     #2563EB;
+        --amber:    #B45309;
+        --red:      #DC2626;
+        --violet:   #6D28D9;
+
+        --btn-fg: #FFFFFF;
+        --btn-hover-bg: #1D4ED8;
+
+        --nav-bg: rgba(255, 255, 255, 0.82);
+
+        --body-glow-1: rgba(37, 99, 235, 0.05);
+        --body-glow-2: rgba(109, 40, 217, 0.04);
+
+        --shadow-1: 0 1px 0 rgba(15,23,42,0.02), 0 1px 3px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
+        --shadow-2: 0 1px 0 rgba(15,23,42,0.03), 0 12px 32px rgba(15,23,42,0.08), 0 24px 60px rgba(15,23,42,0.10);
+    }
+}
+
+/* ─── 切换瞬间：给所有色变加过渡，其他时候保持瞬时 ─── */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+    transition: background-color var(--t-theme) ease,
+                border-color var(--t-theme) ease,
+                color var(--t-theme) ease,
+                box-shadow var(--t-theme) ease,
+                fill var(--t-theme) ease,
+                stroke var(--t-theme) ease !important;
 }
 
 * { box-sizing: border-box; }
@@ -66,8 +178,8 @@ html, body {
 body {
     min-height: 100vh;
     background-image:
-        radial-gradient(1200px 600px at 20% -10%, rgba(94, 174, 255, 0.04), transparent 50%),
-        radial-gradient(900px 500px at 110% 10%, rgba(167, 139, 250, 0.03), transparent 60%);
+        radial-gradient(1200px 600px at 20% -10%, var(--body-glow-1), transparent 50%),
+        radial-gradient(900px 500px at 110% 10%, var(--body-glow-2), transparent 60%);
 }
 a { color: var(--cyan); text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -84,8 +196,9 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
     position: sticky; top: 0; z-index: 50;
     display: flex; align-items: center; gap: var(--s-5);
     padding: var(--s-3) var(--s-5);
-    background: rgba(10, 14, 20, 0.85);
+    background: var(--nav-bg);
     backdrop-filter: saturate(140%) blur(8px);
+    -webkit-backdrop-filter: saturate(140%) blur(8px);
     border-bottom: 1px solid var(--line);
 }
 .nav-brand {
@@ -96,7 +209,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .nav-brand .dot {
     width: 10px; height: 10px; border-radius: 50%;
     background: var(--phosphor);
-    box-shadow: 0 0 8px rgba(79, 208, 184, 0.6);
+    box-shadow: 0 0 8px var(--phosphor-glow);
 }
 .nav-brand .accent { color: var(--violet); }
 .nav-links { display: flex; gap: var(--s-1); }
@@ -133,8 +246,36 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
     color: var(--text-1);
     padding: 4px 10px; border-radius: var(--r-1);
     cursor: pointer; font-size: 12px;
+    font-family: inherit;
 }
 .nav-meta button:hover { background: var(--bg-2); color: var(--text-0); }
+
+/* ──────── 主题切换器（3 段 segmented） ──────── */
+.theme-toggle {
+    display: inline-flex; align-items: center;
+    padding: 2px;
+    gap: 2px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+}
+.theme-opt {
+    width: 24px; height: 24px;
+    background: transparent; border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-3);
+    padding: 0;
+    transition: color 120ms ease, background 120ms ease;
+}
+.theme-opt:hover { color: var(--text-1); }
+.theme-opt.active {
+    background: var(--bg-1);
+    color: var(--phosphor);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.theme-opt svg { display: block; }
 
 /* ──────── 主区 ──────── */
 main {
@@ -277,7 +418,7 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 /* 货架关注：用琥珀色左色条 + 整行轻微 amber 底色 */
 .sku-row--shelf-watch {
     box-shadow: inset 2px 0 0 var(--amber);
-    background: rgba(229, 168, 71, 0.04);
+    background: var(--amber-soft);
 }
 
 /* 货架关注按钮（POI 详情页每行末尾的 ☆/★） */
@@ -295,11 +436,11 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .shelf-watch-btn:hover {
     background: var(--bg-2);
     color: var(--amber);
-    border-color: rgba(229, 168, 71, 0.4);
+    border-color: var(--amber-border);
 }
 .shelf-watch-btn.on {
-    background: rgba(229, 168, 71, 0.12);
-    border-color: rgba(229, 168, 71, 0.4);
+    background: var(--amber-soft);
+    border-color: var(--amber-border);
     color: var(--amber);
 }
 
@@ -311,9 +452,9 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
     text-transform: uppercase; letter-spacing: 0.06em;
     margin-right: var(--s-2);
 }
-.role-chip--self    { color: var(--phosphor); background: rgba(79,208,184,0.10); border: 1px solid rgba(79,208,184,0.25); }
-.role-chip--watched { color: var(--cyan);     background: rgba(94,174,255,0.10); border: 1px solid rgba(94,174,255,0.25); }
-.role-chip--new     { color: var(--amber);    background: rgba(229,168,71,0.12); border: 1px solid rgba(229,168,71,0.30); }
+.role-chip--self    { color: var(--phosphor); background: var(--phosphor-soft); border: 1px solid var(--phosphor-border); }
+.role-chip--watched { color: var(--cyan);     background: var(--cyan-soft);     border: 1px solid var(--cyan-border); }
+.role-chip--new     { color: var(--amber);    background: var(--amber-soft);    border: 1px solid var(--amber-border); }
 
 /* 覆盖率 chip（首页"关注+自营"列）：100% phosphor；≥50% amber；<50% red */
 .cov {
@@ -326,9 +467,9 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
     line-height: 1.4;
     border: 1px solid transparent;
 }
-.cov--ok   { color: var(--phosphor); background: rgba(79,208,184,0.10);  border-color: rgba(79,208,184,0.30); }
-.cov--mid  { color: var(--amber);    background: rgba(229,168,71,0.12);  border-color: rgba(229,168,71,0.30); }
-.cov--bad  { color: var(--red);      background: rgba(255,107,107,0.10); border-color: rgba(255,107,107,0.30); }
+.cov--ok   { color: var(--phosphor); background: var(--phosphor-soft); border-color: var(--phosphor-border); }
+.cov--mid  { color: var(--amber);    background: var(--amber-soft);    border-color: var(--amber-border); }
+.cov--bad  { color: var(--red);      background: var(--red-soft);      border-color: var(--red-border); }
 .cov--none { color: var(--text-3); }
 .cov--na   { color: var(--text-3); border-color: var(--line); background: var(--bg-2); font-style: italic; letter-spacing: 0.04em; }
 
@@ -398,7 +539,7 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .field input:focus, .field textarea:focus, .field select:focus {
     outline: none;
     border-color: var(--cyan);
-    box-shadow: 0 0 0 3px rgba(94,174,255,0.15);
+    box-shadow: 0 0 0 3px var(--cyan-shadow);
 }
 .field-row {
     display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3);
@@ -419,16 +560,17 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
     display: inline-flex; align-items: center; gap: var(--s-2);
     padding: var(--s-2) var(--s-4);
     background: var(--cyan);
-    color: #0A0E14;
+    color: var(--btn-fg);
     border: 0; border-radius: var(--r-1);
     font-weight: 600; font-size: 13px;
     cursor: pointer;
     text-decoration: none;
+    font-family: inherit;
 }
-.btn:hover { background: #7EBBFF; text-decoration: none; }
+.btn:hover { background: var(--btn-hover-bg); text-decoration: none; }
 .btn--ghost { background: transparent; color: var(--text-1); border: 1px solid var(--line); }
 .btn--ghost:hover { background: var(--bg-2); color: var(--text-0); }
-.btn--danger { background: transparent; color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+.btn--danger { background: transparent; color: var(--red); border: 1px solid var(--red-border); }
 
 /* ──────── Login ──────── */
 .login-wrap {
@@ -452,8 +594,8 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .login-card h1 .accent { color: var(--violet); }
 .login-card .sub { color: var(--text-2); font-size: 13px; margin-bottom: var(--s-5); }
 .login-card .err {
-    background: rgba(255,107,107,0.08);
-    border: 1px solid rgba(255,107,107,0.3);
+    background: var(--red-soft);
+    border: 1px solid var(--red-border);
     color: var(--red);
     padding: var(--s-2) var(--s-3);
     border-radius: var(--r-1);
