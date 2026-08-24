@@ -232,6 +232,7 @@ DEFAULT_CONFIG = {
     "site_timezone": '"Asia/Shanghai"',
     "last_global_scan": "null",
     "polling_sec": "1800",  # 30 min
+    "retention_days": "14",  # prune_history.py 清理的历史保留天数
 }
 
 

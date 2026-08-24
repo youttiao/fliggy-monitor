@@ -143,10 +143,20 @@ jobs:
             else
               echo "WARNING: /etc/fliggy-monitor/cookies.json missing — monitor will not scrape until injected"
             fi
+
+            # 安装 systemd 单元（fliggy-prune@.service / fliggy-prune.timer） + logrotate
+            # 这些是新增的清理任务，之前没在 deploy 里装过——补上。
+            install -m 0644 deploy/systemd/fliggy-prune@.service /etc/systemd/system/fliggy-prune@.service
+            install -m 0644 deploy/systemd/fliggy-prune.timer   /etc/systemd/system/fliggy-prune.timer
+            install -m 0644 deploy/logrotate.d-fliggy-monitor   /etc/logrotate.d/fliggy-monitor
+            /usr/bin/systemctl daemon-reload
+            /usr/bin/systemctl enable --now fliggy-prune.timer || true
+
             /usr/bin/systemctl restart fliggy-web || true
             /usr/bin/systemctl restart fliggy-monitor.timer || true
             sleep 3
             /usr/bin/systemctl status fliggy-web --no-pager | head -10 || true
+            /usr/bin/systemctl list-timers fliggy-prune.timer --no-pager || true
             echo "=== deploy done: $(date -Iseconds) ==="
           REMOTE
         env:

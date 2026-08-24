@@ -1,0 +1,12 @@
+[Unit]
+Description=Fliggy Monitor history prune timer (daily 04:07, keep 14 days)
+
+[Timer]
+OnBootSec=5min
+OnCalendar=*-*-* 04:07:00
+Persistent=true
+AccuracySec=1min
+Unit=fliggy-prune@14.service
+
+[Install]
+WantedBy=timers.target

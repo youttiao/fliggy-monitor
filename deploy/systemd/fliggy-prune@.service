@@ -1,0 +1,23 @@
+[Unit]
+Description=Fliggy Monitor history prune (cells/rounds/alerts/cookies older than %i days)
+After=network.target
+ConditionPathExists=/opt/fliggy-monitor/data/monitor.db
+
+[Service]
+Type=oneshot
+User=monitor
+WorkingDirectory=/opt/fliggy-monitor
+Environment="PATH=/opt/fliggy-monitor/.venv/bin"
+Environment="FLIGGY_DB=/opt/fliggy-monitor/data/monitor.db"
+ExecStart=/opt/fliggy-monitor/.venv/bin/python3 \
+    /opt/fliggy-monitor/scripts/prune_history.py --retention-days %i
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/fliggy-monitor
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+/var/log/fliggy-monitor/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 monitor monitor
+    sharedscripts
+    postrotate
+        systemctl reload fliggy-web || true
+    endscript
+}
