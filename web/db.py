@@ -208,8 +208,12 @@ def cookie_metadata(path: str | None = None) -> dict[str, Any]:
 def poi_summary(conn: sqlite3.Connection, latest_round_id: int) -> list[sqlite3.Row]:
     """每个 POI 的本轮统计：total / self / non_self / non_self_sellers / watched。
 
-    watched = 该 POI 下、由 seller_enrichment.is_watched=1 的外部卖家提供的 cell 数。
-    用于首页计算"关注+自营"覆盖率。
+    watched 计数两种粒度的「关注」：
+      - 卖家级：seller_enrichment.is_watched=1 的外部卖家提供的 cell
+      - SKU 级：shelf_watch.is_watched=1 的 (poi, item, sku)
+    两边合并去重（cells_self 已计自营，watched 只补非自营）。
+    cells_watched_any 用来判断 N/A —— 只要本 POI 任何 cell 被关注过（含自营），
+    就说明用户对此 POI 投入过关注，metric 不再退化成 self/total。
     """
     return query(
         conn,
@@ -219,11 +223,22 @@ def poi_summary(conn: sqlite3.Connection, latest_round_id: int) -> list[sqlite3.
             COUNT(c.id) AS cells_total,
             SUM(CASE WHEN c.is_self=1 THEN 1 ELSE 0 END) AS cells_self,
             SUM(CASE WHEN c.is_self=0 THEN 1 ELSE 0 END) AS cells_non_self,
-            SUM(CASE WHEN c.is_self=0 AND e.is_watched=1 THEN 1 ELSE 0 END) AS cells_watched,
+            -- 「非自营」被关注的 cell（卖家级 OR SKU 级），用于算 good
+            SUM(CASE WHEN c.is_self=0
+                       AND (e.is_watched=1 OR w.is_watched=1)
+                  THEN 1 ELSE 0 END) AS cells_watched,
+            -- 任意 cell 被关注（含自营），用于判断 N/A
+            SUM(CASE WHEN e.is_watched=1 OR w.is_watched=1
+                  THEN 1 ELSE 0 END) AS cells_watched_any,
             COUNT(DISTINCT CASE WHEN c.is_self=0 THEN c.seller_id END) AS non_self_sellers
         FROM pois p
         LEFT JOIN cells_snapshot c ON c.poi_id = p.poi_id AND c.round_id = ?
         LEFT JOIN seller_enrichment e ON e.seller_id = c.seller_id
+        LEFT JOIN shelf_watch w
+               ON w.poi_id = c.poi_id
+              AND w.item_id = c.item_id
+              AND w.sku_id  = c.sku_id
+              AND w.is_watched = 1
         GROUP BY p.poi_id
         ORDER BY p.poi_id
         """,
