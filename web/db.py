@@ -218,7 +218,7 @@ def poi_summary(conn: sqlite3.Connection, latest_round_id: int) -> list[sqlite3.
     """
     return query(
         conn,
-        f"""
+        """
         SELECT
             p.poi_id, p.name, p.enabled, p.last_scanned_at, p.last_status,
             COUNT(c.id) AS cells_total,
