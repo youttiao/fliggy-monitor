@@ -315,6 +315,22 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .role-chip--watched { color: var(--cyan);     background: rgba(94,174,255,0.10); border: 1px solid rgba(94,174,255,0.25); }
 .role-chip--new     { color: var(--amber);    background: rgba(229,168,71,0.12); border: 1px solid rgba(229,168,71,0.30); }
 
+/* 覆盖率 chip（首页"关注+自营"列）：100% phosphor；≥50% amber；<50% red */
+.cov {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: var(--r-1);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    border: 1px solid transparent;
+}
+.cov--ok   { color: var(--phosphor); background: rgba(79,208,184,0.10);  border-color: rgba(79,208,184,0.30); }
+.cov--mid  { color: var(--amber);    background: rgba(229,168,71,0.12);  border-color: rgba(229,168,71,0.30); }
+.cov--bad  { color: var(--red);      background: rgba(255,107,107,0.10); border-color: rgba(255,107,107,0.30); }
+.cov--none { color: var(--text-3); }
+
 /* ──────── cell_type 分组 ──────── */
 .celltype-group {
     margin: var(--s-3) var(--s-4);

@@ -101,12 +101,16 @@
                     <th class="num">自营</th>
                     <th class="num">非自营</th>
                     <th class="num">外部卖家</th>
+                    <th class="num" title="(自营 + 关注卖家) / 总货架。100% 绿色，≥50% 黄色，<50% 红色。">关注+自营</th>
                     <th>最近成功扫描</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
             {% for r in summary %}
+                {% set _total = r.cells_total or 0 %}
+                {% set _good  = (r.cells_self or 0) + (r.cells_watched or 0) %}
+                {% set _pct   = (_good * 100 // _total) if _total > 0 else None %}
                 <tr>
                     <td>
                         <a href="/poi/{{ r.poi_id }}" style="font-weight:500;">{{ r.name }}</a>
@@ -116,6 +120,17 @@
                     <td class="num" style="color:var(--phosphor)">{{ r.cells_self or 0 }}</td>
                     <td class="num" style="color:var(--amber)">{{ r.cells_non_self or 0 }}</td>
                     <td class="num">{{ r.non_self_sellers or 0 }}</td>
+                    <td class="num">
+                        {% if _pct is none %}
+                            <span class="cov cov--none">—</span>
+                        {% elif _pct == 100 %}
+                            <span class="cov cov--ok" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                        {% elif _pct >= 50 %}
+                            <span class="cov cov--mid" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                        {% else %}
+                            <span class="cov cov--bad" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                        {% endif %}
+                    </td>
                     <td class="mono" style="font-size:11px;color:var(--text-2)">{{ r.last_scanned_at | bj or '—' }}</td>
                     <td><a href="/poi/{{ r.poi_id }}" class="btn btn--ghost" style="padding:4px 12px;font-size:12px;">详情 →</a></td>
                 </tr>
