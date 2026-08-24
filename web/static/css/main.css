@@ -260,16 +260,16 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
     border-radius: 999px;
 }
 .theme-opt {
-    width: 24px; height: 24px;
+    width: 26px; height: 26px;
     background: transparent; border: 0;
     border-radius: 999px;
     cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
-    color: var(--text-3);
+    color: var(--text-2);
     padding: 0;
     transition: color 120ms ease, background 120ms ease;
 }
-.theme-opt:hover { color: var(--text-1); }
+.theme-opt:hover { color: var(--text-0); }
 .theme-opt.active {
     background: var(--bg-1);
     color: var(--phosphor);

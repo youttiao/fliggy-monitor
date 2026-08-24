@@ -19,7 +19,8 @@
         } catch (e) { /* localStorage 不可用就跟随系统 */ }
     })();
     </script>
-    <link rel="stylesheet" href="/static/css/main.css">
+    {# 版本戳（?v=N）让浏览器每次部署后强刷；改这里要记得同步加 +1 #}
+    <link rel="stylesheet" href="/static/css/main.css?v=2">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234FD0B8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -31,7 +32,7 @@
 {% block content %}{% endblock %}
 </main>
 
-<script src="/static/js/app.js"></script>
+<script src="/static/js/app.js?v=2"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
