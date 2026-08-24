@@ -330,6 +330,7 @@ table.data td.id { font-family: var(--font-mono); color: var(--text-2); font-siz
 .cov--mid  { color: var(--amber);    background: rgba(229,168,71,0.12);  border-color: rgba(229,168,71,0.30); }
 .cov--bad  { color: var(--red);      background: rgba(255,107,107,0.10); border-color: rgba(255,107,107,0.30); }
 .cov--none { color: var(--text-3); }
+.cov--na   { color: var(--text-3); border-color: var(--line); background: var(--bg-2); font-style: italic; letter-spacing: 0.04em; }
 
 /* ──────── cell_type 分组 ──────── */
 .celltype-group {

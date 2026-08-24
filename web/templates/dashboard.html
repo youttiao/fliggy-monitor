@@ -109,7 +109,8 @@
             <tbody>
             {% for r in summary %}
                 {% set _total = r.cells_total or 0 %}
-                {% set _good  = (r.cells_self or 0) + (r.cells_watched or 0) %}
+                {% set _watched = r.cells_watched or 0 %}
+                {% set _good  = (r.cells_self or 0) + _watched %}
                 {% set _pct   = (_good * 100 // _total) if _total > 0 else None %}
                 <tr>
                     <td>
@@ -122,13 +123,15 @@
                     <td class="num">{{ r.non_self_sellers or 0 }}</td>
                     <td class="num">
                         {% if _pct is none %}
-                            <span class="cov cov--none">—</span>
+                            <span class="cov cov--none" title="本 POI 本轮无货架">—</span>
+                        {% elif _watched == 0 %}
+                            <span class="cov cov--na" title="本 POI 本轮无关注的卖家货架——分母=0，指标无意义。先在 /sellers 标记你想跟的卖家。">N/A</span>
                         {% elif _pct == 100 %}
-                            <span class="cov cov--ok" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                            <span class="cov cov--ok" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ _watched }} / 总 {{ _total }}">{{ _pct }}%</span>
                         {% elif _pct >= 50 %}
-                            <span class="cov cov--mid" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                            <span class="cov cov--mid" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ _watched }} / 总 {{ _total }}">{{ _pct }}%</span>
                         {% else %}
-                            <span class="cov cov--bad" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ r.cells_watched or 0 }} / 总 {{ _total }}">{{ _pct }}%</span>
+                            <span class="cov cov--bad" title="自营 {{ r.cells_self or 0 }} · 关注卖家 {{ _watched }} / 总 {{ _total }}">{{ _pct }}%</span>
                         {% endif %}
                     </td>
                     <td class="mono" style="font-size:11px;color:var(--text-2)">{{ r.last_scanned_at | bj or '—' }}</td>
