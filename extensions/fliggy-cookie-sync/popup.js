@@ -193,6 +193,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("retry").addEventListener("click", triggerAutoSync);
   $("save-and-sync").addEventListener("click", triggerAutoSync);
 
+  // auto 模式下手动切回配置区（修改 endpoint / secret），方便修正错误的密钥
+  $("edit-config").addEventListener("click", () => {
+    $("auto-section").hidden = true;
+    $("config-section").hidden = false;
+    clearStatus();
+    $("secret").focus();
+    $("secret").select();
+  });
+
   // 输入变化时清状态 + 切回 config 模式以便用户重填
   const onInput = () => {
     clearStatus();

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "飞猪哨兵 · Cookie 同步",
   "short_name": "fliggy-cookie-sync",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "点一下工具栏图标，自动开手机尺寸窗口访问飞猪 H5 → 自动抓 mtop cookies → 自动上传到 VPS。",
   "action": {
     "default_title": "飞猪哨兵 Cookie 同步（点一下自动同步）",

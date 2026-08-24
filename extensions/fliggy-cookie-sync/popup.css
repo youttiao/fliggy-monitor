@@ -109,6 +109,21 @@ button.primary:hover:not(:disabled) {
   border-color: var(--accent-hi);
   color: #fff;
 }
+.row.sub-actions {
+  justify-content: center;
+  margin-top: -4px;
+}
+.row.sub-actions button {
+  flex: none;
+  font-size: 11px;
+  padding: 5px 10px;
+  color: var(--muted);
+  background: transparent;
+}
+.row.sub-actions button:hover:not(:disabled) {
+  color: var(--accent-hi);
+  background: transparent;
+}
 
 .status {
   border-radius: 6px;
