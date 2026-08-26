@@ -341,7 +341,7 @@ def list_alerts(conn: sqlite3.Connection, limit: int = 100, *, only_pending_webh
 
 def list_sellers(conn: sqlite3.Connection, *, watched_only: bool = False, unidentified_only: bool = False,
                  search: str | None = None) -> list[sqlite3.Row]:
-    """JOIN sellers + enrichment。unidentified = 没 display_name 也没 seller_name。"""
+    """JOIN sellers + enrichment。current_cells 是 cells_snapshot 中该 seller 的实时 cell 数。"""
     where: list[str] = []
     params: list[Any] = []
     if watched_only:
@@ -354,7 +354,11 @@ def list_sellers(conn: sqlite3.Connection, *, watched_only: bool = False, uniden
         params.extend([like, like, like, like])
     sql = f"""
         SELECT s.seller_id, s.seller_name, s.seller_icon, s.shop_jump_url,
-               s.first_seen_at, s.last_seen_at, s.total_cells, s.is_self,
+               s.first_seen_at, s.last_seen_at, s.is_self,
+               COALESCE(
+                   (SELECT COUNT(*) FROM cells_snapshot cs WHERE cs.seller_id = s.seller_id),
+                   0
+               ) AS current_cells,
                e.display_name, e.is_watched, e.notes, e.tags, e.priority,
                e.updated_at AS enrichment_updated_at
         FROM sellers s
@@ -371,7 +375,14 @@ def seller_detail(conn: sqlite3.Connection, seller_id: str) -> sqlite3.Row | Non
     return query(
         conn,
         """
-        SELECT s.*, e.display_name, e.is_watched, e.notes, e.tags, e.priority,
+        SELECT s.seller_id, s.seller_name, s.seller_icon, s.shop_jump_url,
+               s.service_stats, s.is_self, s.first_seen_at, s.last_seen_at,
+               s.booktips_refreshed_at, s.booktips_raw,
+               COALESCE(
+                   (SELECT COUNT(*) FROM cells_snapshot cs WHERE cs.seller_id = s.seller_id),
+                   0
+               ) AS current_cells,
+               e.display_name, e.is_watched, e.notes, e.tags, e.priority,
                e.updated_at AS enrichment_updated_at
         FROM sellers s
         LEFT JOIN seller_enrichment e ON e.seller_id = s.seller_id

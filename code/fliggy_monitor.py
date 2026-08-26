@@ -90,7 +90,9 @@ def scan_poi(
 ) -> tuple[list[sqlite3.Row], int]:
     """对一个 POI 跑 shelf，写 cells_snapshot；返回 (新插入的 cells, booktips_hits)。
 
-    注意：触发器 trg_seller_upsert 会在 INSERT 后自动维护 sellers 表。
+    注意：触发器 trg_seller_upsert 会在 INSERT 后自动维护 sellers 表的
+    first_seen_at / last_seen_at / is_self；cell 数（current_cells）由查询时
+    实时从 cells_snapshot COUNT，不在此维护。
     """
     poi_id = poi["poi_id"]
     poi_name = poi["name"]

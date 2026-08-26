@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS sellers (
     is_self         INTEGER NOT NULL DEFAULT 0,
     first_seen_at   TEXT NOT NULL,
     last_seen_at    TEXT NOT NULL,
-    total_cells     INTEGER DEFAULT 0,
     booktips_refreshed_at TEXT,
     booktips_raw    TEXT
 );
@@ -199,15 +198,15 @@ CREATE TABLE IF NOT EXISTS cookies_history (
 );
 CREATE INDEX IF NOT EXISTS idx_cookies_ts ON cookies_history(ts DESC);
 
--- 触发器：cells_snapshot 写入后自动 upsert sellers
+-- 触发器：cells_snapshot 写入后自动 upsert sellers（只更新 last_seen_at / is_self）
+-- cell 数（current_cells）由查询时实时从 cells_snapshot COUNT，不在此维护。
 CREATE TRIGGER IF NOT EXISTS trg_seller_upsert
 AFTER INSERT ON cells_snapshot
 BEGIN
-    INSERT INTO sellers (seller_id, first_seen_at, last_seen_at, total_cells, is_self)
-    VALUES (NEW.seller_id, NEW.first_seen_at, NEW.first_seen_at, 1, NEW.is_self)
+    INSERT INTO sellers (seller_id, first_seen_at, last_seen_at, is_self)
+    VALUES (NEW.seller_id, NEW.first_seen_at, NEW.first_seen_at, NEW.is_self)
     ON CONFLICT(seller_id) DO UPDATE SET
         last_seen_at = NEW.first_seen_at,
-        total_cells  = total_cells + 1,
         is_self      = NEW.is_self;
 END;
 """
@@ -278,8 +277,8 @@ def import_seller_baseline(conn, json_path: Path) -> int:
                 """
                 INSERT INTO sellers
                     (seller_id, seller_name, seller_icon, shop_jump_url, service_stats,
-                     is_self, first_seen_at, last_seen_at, total_cells, booktips_refreshed_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     is_self, first_seen_at, last_seen_at, booktips_refreshed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(seller_id) DO UPDATE SET
                     seller_name  = excluded.seller_name,
                     seller_icon  = excluded.seller_icon,
@@ -294,7 +293,7 @@ def import_seller_baseline(conn, json_path: Path) -> int:
                     s.get("shop_jump_url") or s.get("shopJumpUrl"),
                     json.dumps(stats, ensure_ascii=False) if stats else None,
                     1 if sid == "2217592322543" else 0,
-                    now, now, 0, now,
+                    now, now, now,
                 ),
             )
             n += 1
@@ -405,6 +404,63 @@ def _parse_simple_yaml_pois(text: str) -> list[dict]:
     return rows
 
 
+def migrate_drop_total_cells(conn) -> list[str]:
+    """迁移：去掉 sellers.total_cells 累计列，cell 数改用 cells_snapshot 实时统计。
+
+    幂等：schema 已是新定义时返回 []。fresh install 直接走 SCHEMA_SQL 路径，
+    老 DB 第一次跑会执行 recreate_trigger + drop_column，再跑就是 no-op。
+
+    触发器虽然名字没变，但只要定义里没 total_cells 就算新版本，所以也走 DROP+CREATE。
+    SQLite < 3.35.0 不支持 ALTER TABLE DROP COLUMN，给出可操作的错误。
+    """
+    actions: list[str] = []
+
+    cols = [r["name"] for r in execute(conn, "PRAGMA table_info(sellers)").fetchall()]
+    has_total = "total_cells" in cols
+
+    trg_row = execute(
+        conn,
+        "SELECT sql FROM sqlite_master WHERE type='trigger' AND name='trg_seller_upsert'",
+    ).fetchone()
+    trg_sql = (trg_row["sql"] if trg_row else "") or ""
+    is_new_trigger = "total_cells" not in trg_sql.lower()
+
+    if not has_total and is_new_trigger:
+        return actions  # 已是新 schema
+
+    v = conn.execute("SELECT sqlite_version()").fetchone()[0]
+    parts = [int(x) for x in v.split(".")[:2]]
+    if parts[0] < 3 or (parts[0] == 3 and parts[1] < 35):
+        raise RuntimeError(
+            f"当前 SQLite 版本 {v} < 3.35.0，不支持 ALTER TABLE ... DROP COLUMN；"
+            "请先升级 system sqlite，或 `pip install pysqlite3-binary` 替换内置模块。"
+        )
+
+    with transaction(conn):
+        execute(conn, "DROP TRIGGER IF EXISTS trg_seller_upsert")
+        execute(
+            conn,
+            """
+            CREATE TRIGGER trg_seller_upsert
+            AFTER INSERT ON cells_snapshot
+            BEGIN
+                INSERT INTO sellers (seller_id, first_seen_at, last_seen_at, is_self)
+                VALUES (NEW.seller_id, NEW.first_seen_at, NEW.first_seen_at, NEW.is_self)
+                ON CONFLICT(seller_id) DO UPDATE SET
+                    last_seen_at = NEW.first_seen_at,
+                    is_self      = NEW.is_self;
+            END
+            """,
+        )
+        actions.append("recreate_trigger")
+
+        if has_total:
+            execute(conn, "ALTER TABLE sellers DROP COLUMN total_cells")
+            actions.append("drop_column")
+
+    return actions
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="初始化飞猪哨兵数据库")
     parser.add_argument("--db", default=os.getenv("FLIGGY_DB", "/opt/fliggy-monitor/data/monitor.db"),
@@ -418,6 +474,13 @@ def main() -> int:
     try:
         print("[init_db] 写入 schema…")
         conn.executescript(SCHEMA_SQL)
+
+        print("[init_db] 检查迁移…")
+        mig_actions = migrate_drop_total_cells(conn)
+        if mig_actions:
+            print(f"  → 已执行迁移: {', '.join(mig_actions)}")
+        else:
+            print("  → 无需迁移")
 
         print("[init_db] 写入默认 config…")
         n_cfg = seed_config(conn)

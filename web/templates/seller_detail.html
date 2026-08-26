@@ -25,8 +25,8 @@
 
 <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
     <div class="kpi">
-        <div class="label">货架数（累计）</div>
-        <div class="value">{{ seller.total_cells or 0 }}</div>
+        <div class="label">货架数</div>
+        <div class="value">{{ seller.current_cells or 0 }}</div>
     </div>
     <div class="kpi">
         <div class="label">跨 POI 数</div>

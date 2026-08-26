@@ -42,6 +42,7 @@ CREATE TABLE seller_enrichment (
 #### A. 卖家管理列表（`/sellers`）
 
 - **表格列**：sellerId / 显示名 / 来源 / 关注 / 货架数 / 首次 / 操作
+  - 「货架数」= 该 seller **当前**在 `cells_snapshot` 中出现的 cell 数（实时 COUNT，非历史累计；老 cells 被 `prune_history.py` 清掉后自动归 0）
 - **筛选**：全部 / 只看关注 / 只看未识别 / 未填 display_name
 - **搜索**：按 sellerId / 显示名 / notes 全文搜（SQLite 用 LIKE，v1 不上 FTS5）
 - **行交互**：点「关注」列的 `☆` 立即切到 `★`（AJAX 乐观 UI，无需刷新）

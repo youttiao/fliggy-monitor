@@ -96,7 +96,6 @@ CREATE TABLE sellers (
     is_self         INTEGER NOT NULL DEFAULT 0, -- 0 / 1
     first_seen_at   TEXT NOT NULL,               -- 卖家首次在 shelf 中出现
     last_seen_at    TEXT NOT NULL,               -- 最近一次出现
-    total_cells     INTEGER DEFAULT 0,           -- 累计独立 cell 数
     booktips_refreshed_at TEXT,                  -- 最近一次 booktips 拉取时间
     booktips_raw    TEXT,                        -- 最近一次 booktips 响应的 sellerInfo 子树（用于审计）
     UNIQUE(seller_id)
@@ -107,20 +106,32 @@ CREATE INDEX idx_sellers_last   ON sellers(last_seen_at DESC);
 CREATE INDEX idx_sellers_name   ON sellers(seller_name);
 ```
 
-#### 触发器：自动更新 last_seen / total_cells
+#### 触发器：自动更新 last_seen / is_self
 
 ```sql
 CREATE TRIGGER trg_seller_upsert
 AFTER INSERT ON cells_snapshot
 BEGIN
-    INSERT INTO sellers (seller_id, first_seen_at, last_seen_at, total_cells, is_self)
-    VALUES (NEW.seller_id, NEW.first_seen_at, NEW.first_seen_at, 1, NEW.is_self)
+    INSERT INTO sellers (seller_id, first_seen_at, last_seen_at, is_self)
+    VALUES (NEW.seller_id, NEW.first_seen_at, NEW.first_seen_at, NEW.is_self)
     ON CONFLICT(seller_id) DO UPDATE SET
         last_seen_at = NEW.first_seen_at,
-        total_cells  = total_cells + 1,
         is_self      = NEW.is_self;  -- 保持与最新 cell 一致（虽然 seller_id 通常稳定）
 END;
 ```
+
+#### `current_cells` — 当下在售 cell 数（查询时实时计算）
+
+不是 `sellers` 表的物理列；前端查询时通过相关子查询实时统计：
+
+```sql
+COALESCE(
+    (SELECT COUNT(*) FROM cells_snapshot cs WHERE cs.seller_id = s.seller_id),
+    0
+) AS current_cells
+```
+
+依赖 `idx_cells_seller(seller_id)`。`prune_history.py` 清掉老 cells 后，seller 在 `sellers` 表里仍然保留（cumulative 持久信息：`first_seen_at` / `last_seen_at` / `is_self` / 关注/备注），`current_cells` 自动归 0 —— 这正是该字段的语义：当下切片，不是历史累计。
 
 ### 3.2.4 `seller_enrichment` — 用户管理的卖家元数据（display_name / 关注 / 备注）
 
