@@ -98,6 +98,37 @@ async function toggleShelfWatch(poiId, itemId, skuId, target) {
     }
 }
 
+/* 1c. POI 详情页"掉架的关注"区块 → 移除某个 SKU 的关注标记
+   成功后 fadeOut 该行；如果所有掉架都被移除完了，刷新页面让 header counter 重新计算 */
+async function removeDroppedWatch(poiId, itemId, skuId, btn) {
+    const row = document.getElementById(`dropped-row-${itemId}-${skuId}`);
+    if (!row) return;
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '移除中…';
+    try {
+        const r = await fetch('/api/shelves/watch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ poi_id: poiId, item_id: itemId, sku_id: skuId, watched: false }),
+        });
+        if (!r.ok) throw new Error('http ' + r.status);
+        row.style.transition = 'opacity .25s';
+        row.style.opacity = '0';
+        setTimeout(() => {
+            row.remove();
+            // 区块空了 → 刷新整页让 dashboard tooltip / POI header counter 重算
+            const tbody = document.querySelector('#dropped-watch-list tbody');
+            if (tbody && tbody.children.length === 0) location.reload();
+        }, 250);
+        toast('✓ 已移除该掉架 SKU 的关注', 'ok');
+    } catch (e) {
+        btn.disabled = false;
+        btn.textContent = origText;
+        toast('移除失败：' + e.message, 'err');
+    }
+}
+
 /* 2. 设置页 → 测试 webhook */
 async function testWebhook(btn, kind) {
     btn.disabled = true;

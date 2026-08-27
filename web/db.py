@@ -312,6 +312,52 @@ def poi_cells(
     return query(conn, sql, params) or []
 
 
+def watched_but_missing(
+    conn: sqlite3.Connection,
+    poi_id: str,
+    round_id: int,
+) -> list[sqlite3.Row]:
+    """POI 上打过 ★ 但本轮 round 掉架的 SKU 列表。
+
+    返回每个 shelf_watch 行附带「最后一次在架」时的 sku_name / seller_id / round_id / 时间，
+    用于 POI 详情页"掉架的关注"区块渲染 + 移除按钮。
+    """
+    return query(
+        conn,
+        """
+        SELECT w.item_id, w.sku_id, w.notes, w.created_at, w.updated_at, w.created_by,
+               last.cells_seller_id   AS last_seller_id,
+               last.cells_round_id    AS last_seen_round,
+               last.cells_started_at  AS last_seen_at,
+               last.cells_sku_name    AS last_sku_name
+          FROM shelf_watch w
+          LEFT JOIN (
+              SELECT c2.poi_id, c2.item_id, c2.sku_id,
+                     c2.seller_id AS cells_seller_id,
+                     c2.round_id  AS cells_round_id,
+                     c2.sku_name  AS cells_sku_name,
+                     r.started_at AS cells_started_at
+                FROM cells_snapshot c2
+                JOIN rounds r ON r.id = c2.round_id
+                JOIN (
+                    SELECT c3.poi_id, c3.item_id, c3.sku_id, MAX(c3.round_id) AS max_round
+                      FROM cells_snapshot c3
+                     GROUP BY c3.poi_id, c3.item_id, c3.sku_id
+                ) m ON m.poi_id = c2.poi_id AND m.item_id = c2.item_id
+                   AND m.sku_id = c2.sku_id AND m.max_round = c2.round_id
+          ) last ON last.poi_id = w.poi_id AND last.item_id = w.item_id AND last.sku_id = w.sku_id
+         WHERE w.poi_id = ? AND w.is_watched = 1
+           AND NOT EXISTS (
+               SELECT 1 FROM cells_snapshot c
+                WHERE c.round_id = ? AND c.poi_id = w.poi_id
+                  AND c.item_id = w.item_id AND c.sku_id = w.sku_id
+           )
+         ORDER BY w.updated_at DESC
+        """,
+        (poi_id, round_id),
+    ) or []
+
+
 def sku_history(conn: sqlite3.Connection, poi_id: str, item_id: str, sku_id: str, limit: int = 30) -> list[sqlite3.Row]:
     return query(
         conn,

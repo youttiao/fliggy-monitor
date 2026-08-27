@@ -103,4 +103,50 @@
 </div>
 {% endfor %}
 
+{% if dropped_watched %}
+<div class="card" style="margin-top:var(--s-4);border:1px dashed var(--amber);">
+    <div class="card-body">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--s-3);">
+            <span class="role-chip" style="background:var(--amber);color:#000;font-weight:600;">掉架</span>
+            <h3 style="margin:0;font-size:14px;font-weight:500;">已关注的货架 · 本轮掉架（不计入关注自营率分母）</h3>
+            <span class="count" style="margin-left:auto;font-size:12px;color:var(--text-2);">{{ dropped_watched | length }} 个</span>
+            <button type="button" class="btn btn--ghost" style="padding:2px 10px;font-size:11px;" onclick="document.getElementById('dropped-watch-list').style.display = document.getElementById('dropped-watch-list').style.display === 'none' ? 'block' : 'none'; this.textContent = this.textContent === '展开' ? '收起' : '展开';">展开</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-2);margin:0 0 var(--s-3) 0;">
+            你之前给这些 SKU 点过 ★，但本轮 cells_snapshot 里已经看不到它们了（飞猪整个把这条 SKU 撤了 / itemId 换了）。
+            dashboard 的"关注自营率"分母仍然包含它们，所以 33% / 20% 看起来偏低。点移除可清出分母。
+        </p>
+        <div id="dropped-watch-list" style="display:none;">
+        <table class="sku-table" style="margin:0;">
+            <thead>
+                <tr>
+                    <th style="width:32%">SKU（最后在架时的名称）</th>
+                    <th style="width:18%">itemId / skuId</th>
+                    <th style="width:14%">最后在架</th>
+                    <th>关注于</th>
+                    <th style="width:90px;text-align:center;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for w in dropped_watched %}
+            <tr id="dropped-row-{{ w.item_id }}-{{ w.sku_id }}">
+                <td class="sku-name" style="color:var(--text-2);">{{ w.last_sku_name or '—' }} <span style="color:var(--text-3);font-size:11px;">(skuId 在 cells 已无记录)</span></td>
+                <td class="id">{{ w.item_id[:10] }}… / {{ w.sku_id[:10] }}…</td>
+                <td class="mono" style="font-size:11px;color:var(--text-3);">
+                    {% if w.last_seen_at %}{{ w.last_seen_at | bj }}<br><span style="font-size:10px;">round #{{ w.last_seen_round }}</span>{% else %}从未在架{% endif %}
+                </td>
+                <td class="mono" style="font-size:11px;color:var(--text-3);">{{ w.updated_at | bj }}</td>
+                <td style="text-align:center;">
+                    <button type="button" class="btn btn--ghost" style="padding:2px 10px;font-size:11px;color:var(--bad);"
+                            onclick="removeDroppedWatch('{{ poi.poi_id }}', '{{ w.item_id }}', '{{ w.sku_id }}', this)">移除关注</button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

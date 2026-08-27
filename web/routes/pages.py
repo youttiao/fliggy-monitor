@@ -218,6 +218,9 @@ async def poi_detail(
     type_priority = ["门票套餐", "景点门票", "园内项目", "景区联票", "周边景区门票", "周边景区套票", "未分类"]
     ordered_types = sorted(grouped.keys(), key=lambda t: (type_priority.index(t) if t in type_priority else 99, t))
 
+    # 打过 ★ 但本轮掉架的 SKU（POI 详情页底部单独渲染 + 移除入口）
+    dropped_watched = dbmod.watched_but_missing(conn, poi_id, latest["id"])
+
     return templates.TemplateResponse(
         request,
         "poi_detail.html",
@@ -230,6 +233,7 @@ async def poi_detail(
             cell_type=cell_type,
             seller_id=seller_id,
             focus=focus,
+            dropped_watched=dropped_watched,
         ),
     )
 
